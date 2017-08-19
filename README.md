@@ -59,6 +59,7 @@ If you discover any security related issues, please email info@codefocus.ca inst
 ## Credits
 
 - [Menno van Ens][link-author]
+- [Anthony Tsui](https://github.com/matresstester)
 - [All Contributors][link-contributors]
 
 ## License
