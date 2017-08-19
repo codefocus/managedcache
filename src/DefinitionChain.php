@@ -3,7 +3,6 @@
 namespace Codefocus\ManagedCache;
 
 use Illuminate\Contracts\Cache\Store as StoreContract;
-use Illuminate\Database\Eloquent\Model;
 
 class DefinitionChain implements StoreContract
 {
@@ -18,7 +17,7 @@ class DefinitionChain implements StoreContract
      *
      * @param ManagedCache $managedCache
      */
-    public function __construct(ManagedCache $managedCache)
+    public function __construct(ManagedCache $managedCache): void
     {
         $this->managedCache = $managedCache;
         $this->store = $managedCache->getStore();
@@ -61,32 +60,20 @@ class DefinitionChain implements StoreContract
     {
         $tags = [];
         foreach ($this->conditions as $condition) {
-            $tags[] = (string)$condition;
+            $tags[] = (string) $condition;
         }
 
         return $tags;
     }
 
-
-    public function getTaggedStore()
+    /**
+     * Return the cache store, after applying our conditions to it, as tags.
+     *
+     * @return StoreContract
+     */
+    public function getTaggedStore(): StoreContract
     {
         return $this->store->tags($this->getConditionTags());
-    }
-
-    /**
-     * Get the observable event names.
-     *
-     * @return array
-     */
-    protected function getObservableEvents(): array
-    {
-        return [
-            static::EVENT_ELOQUENT_CREATED,
-            static::EVENT_ELOQUENT_UPDATED,
-            static::EVENT_ELOQUENT_SAVED,
-            static::EVENT_ELOQUENT_DELETED,
-            static::EVENT_ELOQUENT_RESTORED,
-        ];
     }
 
     /**

@@ -53,7 +53,7 @@ class ManagedCache
     /**
      * Register event listeners.
      */
-    protected function registerEventListener()
+    protected function registerEventListener(): void
     {
         //  Register Eloquent event listeners.
         foreach ($this->getObservableEvents() as $eventKey) {
@@ -148,8 +148,6 @@ class ManagedCache
         //	Flush all items with these tags
         Cache::tags($cacheTags)->flush();
     }
-
-
 
     public function created(string $modelClassName): Condition
     {

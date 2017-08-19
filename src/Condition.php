@@ -29,8 +29,6 @@ class Condition
      * @param ?integer $modelId (default: null)
      * @param ?string $relatedModelName (default: null)
      * @param ?integer $relatedModelId (default: null)
-     *
-     * @return string
      */
     public function __construct(
         string $eventName,
