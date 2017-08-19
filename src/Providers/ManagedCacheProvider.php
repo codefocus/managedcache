@@ -16,12 +16,13 @@ class ManagedCacheProvider extends ServiceProvider
 
     protected $managedcache;
 
+    /**
+     * Constructor.
+     *
+     * @param ManagedCache $managedcache
+     */
     public function boot(ManagedCache $managedcache)
     {
-        //  ManagedCache instance has been created.
-        dump('ManagedCacheProvider boot');
-        // dump($managedcache);
-
         $this->managedcache = $managedcache;
     }
 
@@ -30,9 +31,9 @@ class ManagedCacheProvider extends ServiceProvider
      */
     public function register()
     {
-        dump('ManagedCacheProvider register');
-
-        $this->app->singleton('codefocus.managedcache', ManagedCache::class);
+        $this->app->singleton('codefocus.managedcache', function() {
+            return $this->managedcache;
+        });
     }
 
     /**

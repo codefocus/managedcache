@@ -62,7 +62,13 @@ class ManagedCache
         // $this->dispatcher->listen('*', [$this, 'handleOtherEvent']);
     }
 
-    public function handleEloquentEvent($eventKey, $b)
+    /**
+     * Handle an Eloquent event.
+     *
+     * @param string $eventKey
+     * @param mixed $payload
+     */
+    public function handleEloquentEvent($eventKey, $payload): void
     {
         $regex = '/^(' . implode('|', $this->getObservableEvents()) . '): ([a-zA-Z0-9\\\\]+)$/';
 
@@ -78,11 +84,6 @@ class ManagedCache
         // dump('handleEvent: ' . $a);
         // dump($a);
         // dump(get_class($b));
-    }
-
-    public function handleOtherEvent($a, $b)
-    {
-        dump($a);
     }
 
     /**

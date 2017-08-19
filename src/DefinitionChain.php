@@ -3,6 +3,7 @@
 namespace Codefocus\ManagedCache;
 
 use Illuminate\Contracts\Cache\Store as StoreContract;
+use Illuminate\Cache\TaggedCache;
 
 class DefinitionChain implements StoreContract
 {
@@ -17,7 +18,7 @@ class DefinitionChain implements StoreContract
      *
      * @param ManagedCache $managedCache
      */
-    public function __construct(ManagedCache $managedCache): void
+    public function __construct(ManagedCache $managedCache)
     {
         $this->managedCache = $managedCache;
         $this->store = $managedCache->getStore();
@@ -69,9 +70,9 @@ class DefinitionChain implements StoreContract
     /**
      * Return the cache store, after applying our conditions to it, as tags.
      *
-     * @return StoreContract
+     * @return TaggedCache
      */
-    public function getTaggedStore(): StoreContract
+    public function getTaggedStore(): TaggedCache
     {
         return $this->store->tags($this->getConditionTags());
     }
