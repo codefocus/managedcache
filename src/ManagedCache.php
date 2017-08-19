@@ -33,7 +33,7 @@ class ManagedCache
     public function __construct(Dispatcher $dispatcher)
     {
         $this->store = app('cache')->store()->getStore();
-        if ( ! ($this->store instanceof MemcachedStore)) {
+        if (! ($this->store instanceof MemcachedStore)) {
             throw new Exception('Memcached not configured. Cache store is "' . class_basename($this->store) . '"');
         }
         $this->dispatcher = $dispatcher;
@@ -119,7 +119,7 @@ class ManagedCache
         $cacheTags = [];
         $cacheTags[] = $this->createConditionTag($eventName, $modelName);
         if ($model instanceof \App\Model) {
-            if ( ! empty($model->id)) {
+            if (! empty($model->id)) {
                 //  Flush items that are tagged with this event and this specific model.
                 $cacheTags[] = $this->createConditionTag($eventName, $modelName, $model->id);
             }
@@ -235,7 +235,7 @@ class ManagedCache
     public function __call(string $name, array $arguments): DefinitionChain
     {
         $definitionChain = new DefinitionChain($this);
-        if ( ! method_exists($definitionChain, $name)) {
+        if (! method_exists($definitionChain, $name)) {
             throw new BadFunctionCallException();
         }
 

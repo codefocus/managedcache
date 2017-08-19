@@ -31,7 +31,7 @@ class ManagedCacheProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('codefocus.managedcache', function() {
+        $this->app->singleton('codefocus.managedcache', function () {
             return $this->managedcache;
         });
     }
