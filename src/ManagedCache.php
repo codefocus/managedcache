@@ -59,7 +59,6 @@ class ManagedCache
         foreach ($this->getObservableEvents() as $eventKey) {
             $this->dispatcher->listen($eventKey . ':*', [$this, 'handleEloquentEvent']);
         }
-        // $this->dispatcher->listen('*', [$this, 'handleOtherEvent']);
     }
 
     /**
@@ -72,18 +71,64 @@ class ManagedCache
     {
         $regex = '/^(' . implode('|', $this->getObservableEvents()) . '): ([a-zA-Z0-9\\\\]+)$/';
 
-        if (preg_match($regex, $eventKey, $matches)) {
-            $eventName = $matches[1];
-            $modelName = $matches[2];
-
-            dump($eventName);
-            dump($modelName);
-            // dump($matches);
+        if (! preg_match($regex, $eventKey, $matches)) {
+            return;
         }
 
-        // dump('handleEvent: ' . $a);
-        // dump($a);
-        // dump(get_class($b));
+        $eventName = $matches[1];
+        $modelName = $matches[2];
+
+
+
+        //  Ensure $payload is always an array.
+        if (!is_array($payload)) {
+            $payload = [$payload];
+        }
+
+        //  Flush items that are tagged with this event (and no model).
+        //	i.e. items that should be flushed when this event happens to ANY instance of the model.
+        $cacheTags = [];
+
+        //  Create a tag to flush stores tagged with:
+        //  -   this Eloquent event, AND
+        //  -   this Model class
+        $cacheTags[] = new Condition($eventName, $modelName);
+
+        foreach($payload as $model) {
+            if (!is_object($model) || !is_subclass_of($model, Model::class)) {
+                continue;
+            }
+            $modelId = $model->getKey();
+            if (!empty($modelId)) {
+                //  Create a tag to flush stores tagged with:
+                //  -   this Eloquent event, AND
+                //  -   this Model instance
+                $cacheTags[] = new Condition($eventName, $modelName, $modelId);
+            }
+
+            //  @TODO:  Related models.
+
+            // //	Flush cache for related models.
+            // //		E.g.
+            // //			-	A ballot has user_id = 30
+            // //			-	Flush cache tagged "ManagedCache:forget:attach-ballot-user=30"
+            // $modelKeys = $this->extractModelKeys($model->getAttributes());
+            // foreach ($modelKeys as $relatedModelName => $relatedModelId) {
+            //     //	Flush cached items that are tagged through a relation
+            //     //	with this model.
+            //     if ('delete' === $eventName) {
+            //         $relatedEventName = 'detach';
+            //     } else {
+            //         $relatedEventName = 'attach';
+            //     }
+            //     $cacheTags[] = Condition::makeTag($relatedEventName, $modelName, null, $relatedModelName, $relatedModelId);
+            // }
+
+
+        }
+
+        //	Flush all stores with these tags
+        $this->forgetWhen($cacheTags)->flush();
     }
 
     /**
@@ -117,11 +162,11 @@ class ManagedCache
         //  Flush items that are tagged with this event (and no model).
         //	i.e. items that should be flushed when this event happens to ANY instance of the model.
         $cacheTags = [];
-        $cacheTags[] = $this->createConditionTag($eventName, $modelName);
+        $cacheTags[] = Condition::makeTag($eventName, $modelName);
         if ($model instanceof \App\Model) {
             if (! empty($model->id)) {
                 //  Flush items that are tagged with this event and this specific model.
-                $cacheTags[] = $this->createConditionTag($eventName, $modelName, $model->id);
+                $cacheTags[] = Condition::makeTag($eventName, $modelName, $model->id);
             }
 
             //	Flush cache for related models.
@@ -137,7 +182,7 @@ class ManagedCache
                 } else {
                     $relatedEventName = 'attach';
                 }
-                $cacheTags[] = $this->createConditionTag(
+                $cacheTags[] = Condition::makeTag(
                     $relatedEventName,
                     $modelName,
                     null,
