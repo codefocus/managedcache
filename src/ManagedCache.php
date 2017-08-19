@@ -94,7 +94,7 @@ class ManagedCache
         //  -   this Model class
         $cacheTags[] = new Condition($eventName, $modelName);
 
-        foreach($payload as $model) {
+        foreach ($payload as $model) {
             if (!is_object($model) || !is_subclass_of($model, Model::class)) {
                 continue;
             }
@@ -123,8 +123,6 @@ class ManagedCache
             //     }
             //     $cacheTags[] = Condition::makeTag($relatedEventName, $modelName, null, $relatedModelName, $relatedModelId);
             // }
-
-
         }
 
         //	Flush all stores with these tags
