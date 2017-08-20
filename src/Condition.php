@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Condition
 {
     const CACHE_TAG_PREFIX = 'ManagedCache:';
-    // const CACHE_TAG_PRIVATE_PREFIX = 'ManagedCache:private:';
     const CACHE_TAG_SEPARATOR = '-';
+    const CACHE_TAG_ID_OPEN = '(';
+    const CACHE_TAG_ID_CLOSE = '(';
+    const CACHE_TAG_RELATED = '->';
 
     protected $eventName = null;
 
@@ -73,8 +75,11 @@ class Condition
                     $this->eventName .
                     self::CACHE_TAG_SEPARATOR .
                     $this->modelName .
-                    self::CACHE_TAG_SEPARATOR .
-                    $this->relatedModelName . '=' . $this->relatedModelId;
+                    self::CACHE_TAG_RELATED .
+                    $this->relatedModelName .
+                    self::CACHE_TAG_ID_OPEN .
+                    $this->relatedModelId .
+                    self::CACHE_TAG_ID_CLOSE;
             }
             //  All events of this type
             //  linked to a model of this type
@@ -93,8 +98,9 @@ class Condition
             $this->eventName .
             self::CACHE_TAG_SEPARATOR .
             $this->modelName .
-            self::CACHE_TAG_SEPARATOR .
-            $this->modelId;
+            self::CACHE_TAG_ID_OPEN .
+            $this->modelId .
+            self::CACHE_TAG_ID_CLOSE;
     }
 
     /**

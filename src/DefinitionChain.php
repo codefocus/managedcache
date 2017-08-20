@@ -64,6 +64,12 @@ class DefinitionChain implements StoreContract
             $tags[] = (string) $condition;
         }
 
+        //  @TODO:  Remove this.
+        //          Potentially replace with a call to ManagedCache::log()
+        if ($this->managedCache->isDebugModeEnabled()) {
+            dump($tags);
+        }
+
         return $tags;
     }
 

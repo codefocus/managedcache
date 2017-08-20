@@ -17,6 +17,10 @@ class ManagedCache
     const EVENT_ELOQUENT_SAVED = 'eloquent.saved';
     const EVENT_ELOQUENT_DELETED = 'eloquent.deleted';
     const EVENT_ELOQUENT_RESTORED = 'eloquent.restored';
+
+    const EVENT_ELOQUENT_ATTACHED = 'eloquent.attached';
+    const EVENT_ELOQUENT_DETACHED = 'eloquent.detached';
+
     /**
      * @var Dispatcher
      */
@@ -26,6 +30,8 @@ class ManagedCache
      * @var StoreContract
      */
     protected $store;
+
+    private $isDebugModeEnabled = false;
 
     /**
      * Constructor.
@@ -40,6 +46,18 @@ class ManagedCache
         }
         $this->dispatcher = $dispatcher;
         $this->registerEventListener();
+    }
+
+    public function enableDebugMode()
+    {
+        $this->isDebugModeEnabled = true;
+
+        return $this;
+    }
+
+    public function isDebugModeEnabled()
+    {
+        return $this->isDebugModeEnabled;
     }
 
     /**
@@ -108,21 +126,22 @@ class ManagedCache
 
             //  @TODO:  Related models.
 
-            // //	Flush cache for related models.
-            // //		E.g.
-            // //			-	A ballot has user_id = 30
-            // //			-	Flush cache tagged "ManagedCache:forget:attach-ballot-user=30"
-            // $modelKeys = $this->extractModelKeys($model->getAttributes());
-            // foreach ($modelKeys as $relatedModelName => $relatedModelId) {
-            //     //	Flush cached items that are tagged through a relation
-            //     //	with this model.
-            //     if ('delete' === $eventName) {
-            //         $relatedEventName = 'detach';
-            //     } else {
-            //         $relatedEventName = 'attach';
-            //     }
-            //     $cacheTags[] = Condition::makeTag($relatedEventName, $modelName, null, $relatedModelName, $relatedModelId);
-            // }
+            //	Flush cache for related models.
+            //		E.g.
+            //			-	A ballot has user_id = 30
+            //			-	Flush cache tagged "ManagedCache:forget:attach-ballot-user=30"
+            $modelKeys = $this->extractModelKeys($model->getAttributes());
+            foreach ($modelKeys as $relatedModelName => $relatedModelId) {
+                //	Flush cached items that are tagged through a relation
+                //	with this model.
+                if ('delete' === $eventName) {
+                    $relatedEventName = 'detach';
+                } else {
+                    $relatedEventName = 'attach.' . $eventName;
+                }
+                $cacheTags[] = new Condition($relatedEventName, $modelName, $modelId);
+                $cacheTags[] = Condition::makeTag($relatedEventName, $modelName, null, $relatedModelName, $relatedModelId);
+            }
         }
 
         //	Flush all stores with these tags
@@ -146,53 +165,37 @@ class ManagedCache
     }
 
     /**
-     * Flush all cached items tagged with this event.
-     * Called by the ManagedCacheObserver.
+     * extractModelKeys function.
      *
-     * @param string $eventName
-     * @param Model $model	An instance of a Model
+     * @param array $attributeNames
+     *
+     * @return array
      */
-    public function handleModelEvent(string $eventName, Model $model): void
+    protected function extractModelKeys(array $attributeNames)
     {
-        //	Simplify model name, to use in a cache tag.
-        $modelName = $this->simpleModelName($model);
-
-        //  Flush items that are tagged with this event (and no model).
-        //	i.e. items that should be flushed when this event happens to ANY instance of the model.
-        $cacheTags = [];
-        $cacheTags[] = Condition::makeTag($eventName, $modelName);
-        if ($model instanceof \App\Model) {
-            if ( ! empty($model->id)) {
-                //  Flush items that are tagged with this event and this specific model.
-                $cacheTags[] = Condition::makeTag($eventName, $modelName, $model->id);
-            }
-
-            //	Flush cache for related models.
-            //		E.g.
-            //			-	A ballot has user_id = 30
-            //			-	Flush cache tagged "ManagedCache:forget:attach-ballot-user=30"
-            $modelKeys = $this->extractModelKeys($model->getAttributes());
-            foreach ($modelKeys as $relatedModelName => $relatedModelId) {
-                //	Flush cached items that are tagged through a relation
-                //	with this model.
-                if ('delete' === $eventName) {
-                    $relatedEventName = 'detach';
-                } else {
-                    $relatedEventName = 'attach';
-                }
-                $cacheTags[] = Condition::makeTag(
-                    $relatedEventName,
-                    $modelName,
-                    null,
-                    $relatedModelName,
-                    $relatedModelId
-                );
+        $modelKeys = [];
+        foreach ($attributeNames as $attributeName => $value) {
+            if (preg_match('/([^_]+)_id/', $attributeName, $matches)) {
+                //	This field is a key
+                $modelKeys[strtolower($matches[1])] = $value;
             }
         }
-        //	Flush all items with these tags
-        Cache::tags($cacheTags)->flush();
+        //	Ensure our model keys are always in the same order.
+        ksort($modelKeys);
+
+        return $modelKeys;
     }
 
+    //	function extractModelKeys
+
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated
+     * when a new Model of the specified class is created.
+     *
+     * @param string $modelClassName model class name
+     *
+     * @return Condition
+     */
     public function created(string $modelClassName): Condition
     {
         return new Condition(
@@ -201,6 +204,16 @@ class ManagedCache
         );
     }
 
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated
+     * when the specified Model instance, or any Model of the specified class
+     * is updated.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId The Model id
+     *
+     * @return Condition
+     */
     public function updated($model, ?int $modelId): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
@@ -217,6 +230,16 @@ class ManagedCache
         );
     }
 
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated
+     * when the specified Model instance, or any Model of the specified class
+     * is saved.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId The Model id
+     *
+     * @return Condition
+     */
     public function saved($model, ?int $modelId): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
@@ -233,6 +256,16 @@ class ManagedCache
         );
     }
 
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated
+     * when the specified Model instance, or any Model of the specified class
+     * is deleted.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId The Model id
+     *
+     * @return Condition
+     */
     public function deleted($model, ?int $modelId): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
@@ -249,6 +282,16 @@ class ManagedCache
         );
     }
 
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated
+     * when the specified Model instance, or any Model of the specified class
+     * is restored.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId The Model id
+     *
+     * @return Condition
+     */
     public function restored($model, ?int $modelId): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
@@ -266,6 +309,111 @@ class ManagedCache
     }
 
     /**
+     * Returns a Condition instance that tags a cache to get invalidated when
+     * a related Model of the specified class is attached.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId the Model id, if $model is a class name
+     * @param mixed $relatedModel the related Model instance or class name
+     * @param ?int $relatedModelId the related Model id
+     *
+     * @return Condition
+     */
+    public function relationAttached($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    {
+        if (is_object($model) && is_subclass_of($model, Model::class)) {
+            $modelClassName = get_class($model);
+            $modelId = $model->getKey();
+        } else {
+            $modelClassName = $model;
+        }
+        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+            $relatedModelClassName = get_class($relatedModel);
+            $relatedModelId = $relatedModel->getKey();
+        } else {
+            $relatedModelClassName = $relatedModel;
+        }
+
+        return new Condition(
+            self::EVENT_ELOQUENT_ATTACHED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
+    }
+
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated when
+     * a related Model of the specified class is detached.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId the Model id, if $model is a class name
+     * @param mixed $relatedModel the related Model instance or class name
+     * @param ?int $relatedModelId the related Model id
+     *
+     * @return Condition
+     */
+    public function relationDetached($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    {
+        if (is_object($model) && is_subclass_of($model, Model::class)) {
+            $modelClassName = get_class($model);
+            $modelId = $model->getKey();
+        } else {
+            $modelClassName = $model;
+        }
+        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+            $relatedModelClassName = get_class($relatedModel);
+            $relatedModelId = $relatedModel->getKey();
+        } else {
+            $relatedModelClassName = $relatedModel;
+        }
+
+        return new Condition(
+            self::EVENT_ELOQUENT_DETACHED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
+    }
+
+    /**
+     * Returns a Condition instance that tags a cache to get invalidated when
+     * a related Model of the specified class is updated.
+     *
+     * @param mixed $model model instance or class name
+     * @param ?int $modelId the Model id, if $model is a class name
+     * @param mixed $relatedModel the related Model instance or class name
+     * @param ?int $relatedModelId the related Model id
+     *
+     * @return Condition
+     */
+    public function relationUpdated($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    {
+        if (is_object($model) && is_subclass_of($model, Model::class)) {
+            $modelClassName = get_class($model);
+            $modelId = $model->getKey();
+        } else {
+            $modelClassName = $model;
+        }
+        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+            $relatedModelClassName = get_class($relatedModel);
+            $relatedModelId = $relatedModel->getKey();
+        } else {
+            $relatedModelClassName = $relatedModel;
+        }
+
+        return new Condition(
+            self::EVENT_ELOQUENT_UPDATED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
+    }
+
+    /**
      * Route function calls to a new DefinitionChain.
      *
      * @param string $name
@@ -277,7 +425,7 @@ class ManagedCache
     {
         $definitionChain = new DefinitionChain($this);
         if ( ! method_exists($definitionChain, $name)) {
-            throw new BadFunctionCallException();
+            throw new BadFunctionCallException('Function ' . $name . ' does not exist.');
         }
 
         return call_user_func_array([$definitionChain, $name], $arguments);
