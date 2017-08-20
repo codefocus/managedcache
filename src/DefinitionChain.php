@@ -2,8 +2,8 @@
 
 namespace Codefocus\ManagedCache;
 
-use Illuminate\Contracts\Cache\Store as StoreContract;
 use Illuminate\Cache\TaggedCache;
+use Illuminate\Contracts\Cache\Store as StoreContract;
 
 class DefinitionChain implements StoreContract
 {

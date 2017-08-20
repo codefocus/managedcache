@@ -104,7 +104,7 @@ class Condition
      */
     protected function assertIsModel(string $modelClassName): void
     {
-        if (! is_subclass_of($modelClassName, Model::class)) {
+        if ( ! is_subclass_of($modelClassName, Model::class)) {
             throw new Exception($modelClassName . ' is not an Eloquent Model class name.');
         }
     }

@@ -3,7 +3,9 @@
 namespace Codefocus\ManagedCache;
 
 use BadFunctionCallException;
+use Exception;
 use Illuminate\Cache\MemcachedStore;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Cache\Store as StoreContract;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
@@ -32,8 +34,8 @@ class ManagedCache
      */
     public function __construct(Dispatcher $dispatcher)
     {
-        $this->store = app('cache')->store()->getStore();
-        if (! ($this->store instanceof MemcachedStore)) {
+        $this->store = app('cache.store');
+        if ( ! ($this->store->getStore() instanceof MemcachedStore)) {
             throw new Exception('Memcached not configured. Cache store is "' . class_basename($this->store) . '"');
         }
         $this->dispatcher = $dispatcher;
@@ -43,9 +45,9 @@ class ManagedCache
     /**
      * Returns the Cache store instance.
      *
-     * @return StoreContract
+     * @return CacheRepository
      */
-    public function getStore(): StoreContract
+    public function getStore(): CacheRepository
     {
         return $this->store;
     }
@@ -71,17 +73,15 @@ class ManagedCache
     {
         $regex = '/^(' . implode('|', $this->getObservableEvents()) . '): ([a-zA-Z0-9\\\\]+)$/';
 
-        if (! preg_match($regex, $eventKey, $matches)) {
+        if ( ! preg_match($regex, $eventKey, $matches)) {
             return;
         }
 
         $eventName = $matches[1];
         $modelName = $matches[2];
 
-
-
         //  Ensure $payload is always an array.
-        if (!is_array($payload)) {
+        if ( ! is_array($payload)) {
             $payload = [$payload];
         }
 
@@ -95,11 +95,11 @@ class ManagedCache
         $cacheTags[] = new Condition($eventName, $modelName);
 
         foreach ($payload as $model) {
-            if (!is_object($model) || !is_subclass_of($model, Model::class)) {
+            if ( ! is_object($model) || ! is_subclass_of($model, Model::class)) {
                 continue;
             }
             $modelId = $model->getKey();
-            if (!empty($modelId)) {
+            if ( ! empty($modelId)) {
                 //  Create a tag to flush stores tagged with:
                 //  -   this Eloquent event, AND
                 //  -   this Model instance
@@ -162,7 +162,7 @@ class ManagedCache
         $cacheTags = [];
         $cacheTags[] = Condition::makeTag($eventName, $modelName);
         if ($model instanceof \App\Model) {
-            if (! empty($model->id)) {
+            if ( ! empty($model->id)) {
                 //  Flush items that are tagged with this event and this specific model.
                 $cacheTags[] = Condition::makeTag($eventName, $modelName, $model->id);
             }
@@ -266,19 +266,17 @@ class ManagedCache
     }
 
     /**
-     * [__call description].
+     * Route function calls to a new DefinitionChain.
      *
      * @param string $name
      * @param array $arguments
      *
      * @throws BadFunctionCallException
-     *
-     * @return DefinitionChain
      */
-    public function __call(string $name, array $arguments): DefinitionChain
+    public function __call(string $name, array $arguments)
     {
         $definitionChain = new DefinitionChain($this);
-        if (! method_exists($definitionChain, $name)) {
+        if ( ! method_exists($definitionChain, $name)) {
             throw new BadFunctionCallException();
         }
 
