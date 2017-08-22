@@ -61,7 +61,7 @@ trait HandlesEloquentEvents
             $cacheTags += $this->getModelEventTags($model, $eventName);
         }
         //	Flush all stores with these tags
-        $this->forgetWhen($cacheTags)->flush();
+        $this->/* @scrutinizer ignore-call */forgetWhen($cacheTags)->flush();
     }
 
     /**
