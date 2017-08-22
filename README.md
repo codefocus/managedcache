@@ -28,7 +28,7 @@ Support for other cache drivers such as Redis is planned.
 
 ### Model requirements
 
-Models that are used in [invalidation conditions][Automatic invalidation] should have an integer primary key.
+Models that are used in [invalidation conditions](#automatic-invalidation) should have an integer primary key.
 
 ## Install
 
