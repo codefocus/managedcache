@@ -10,7 +10,7 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="Codefocus Test Suite">
+        <testsuite name="managedcache">
             <file>tests/UntaggedTest.php</file>
             <file>tests/TaggedTest.php</file>
         </testsuite>
