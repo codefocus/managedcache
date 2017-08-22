@@ -21,10 +21,11 @@
         }
     ],
     "require": {
-        "php" : ">=7.0",
+        "php" : "^7.1",
         "laravel/framework": "5.4.*"
     },
     "require-dev": {
+        "ext-Phar": "*",
         "phpunit/phpunit" : ">=5.4.3",
         "squizlabs/php_codesniffer": "^2.3",
         "mockery/mockery": "0.9.*",
