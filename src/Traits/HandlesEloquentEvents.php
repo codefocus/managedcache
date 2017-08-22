@@ -2,6 +2,8 @@
 
 namespace Codefocus\ManagedCache\Traits;
 
+use Codefocus\ManagedCache\Condition;
+use Codefocus\ManagedCache\DefinitionChain;
 use Codefocus\ManagedCache\Events\Event;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
@@ -89,7 +91,7 @@ trait HandlesEloquentEvents
             //	Flush cached items that are tagged through a relation
             //	with this model.
             $cacheTags[] = new Condition(
-                (self::EVENT_ELOQUENT_DELETED === $eventName) ? self::EVENT_ELOQUENT_DETACHED : self::EVENT_ELOQUENT_ATTACHED,
+                (Event::EVENT_ELOQUENT_DELETED === $eventName) ? Event::EVENT_ELOQUENT_DETACHED : Event::EVENT_ELOQUENT_ATTACHED,
                 $modelName,
                 $modelId,
                 $relatedModelName,
@@ -140,4 +142,6 @@ trait HandlesEloquentEvents
 
         return $modelKeys;
     }
+
+    abstract public function forgetWhen(array $conditions): DefinitionChain;
 }
