@@ -152,7 +152,6 @@ class ManagedCache
         $modelName = $matches[2];
         //  Ensure $payload is always an array.
         $payload = (is_array($payload)) ? $payload : [$payload];
-
         //  Create a tag to flush stores tagged with:
         //  -   this Eloquent event, AND
         //  -   this Model class
@@ -163,28 +162,39 @@ class ManagedCache
             if ( ! $this->isModel($model)) {
                 continue;
             }
-            $modelId = $model->getKey();
-            if ( ! empty($modelId)) {
-                //  Create a tag to flush stores tagged with:
-                //  -   this Eloquent event, AND
-                //  -   this Model instance
-                $cacheTags[] = new Condition($eventName, $modelName, $modelId);
-            }
-            //	Create tags for related models.
-            foreach ($this->extractModelKeys($model) as $relatedModelName => $relatedModelId) {
-                //	Flush cached items that are tagged through a relation
-                //	with this model.
-                $cacheTags[] = new Condition(
-                    (self::EVENT_ELOQUENT_DELETED === $eventName) ? self::EVENT_ELOQUENT_DETACHED : self::EVENT_ELOQUENT_ATTACHED,
-                    $modelName,
-                    $modelId,
-                    $relatedModelName,
-                    $relatedModelId
-                );
-            }
+            $cacheTags += $this->getModelEventTags($model, $eventName);
         }
         //	Flush all stores with these tags
         $this->forgetWhen($cacheTags)->flush();
+    }
+
+    private function getModelEventTags(Model $model, string $eventName)
+    {
+        $modelId = $model->getKey();
+        if (empty($modelId)) {
+            return [];
+        }
+        $modelName = get_class($model);
+        //  Create a tag to flush stores tagged with:
+        //  -   this Eloquent event, AND
+        //  -   this Model instance
+        $cacheTags = [
+            new Condition($eventName, $modelName, $modelId)
+        ];
+        //	Create tags for related models.
+        foreach ($this->extractModelKeys($model) as $relatedModelName => $relatedModelId) {
+            //	Flush cached items that are tagged through a relation
+            //	with this model.
+            $cacheTags[] = new Condition(
+                (self::EVENT_ELOQUENT_DELETED === $eventName) ? self::EVENT_ELOQUENT_DETACHED : self::EVENT_ELOQUENT_ATTACHED,
+                $modelName,
+                $modelId,
+                $relatedModelName,
+                $relatedModelId
+            );
+        }
+
+        return $cacheTags;
     }
 
     /**
