@@ -6,7 +6,3 @@ coverage:
 ignore:
   - "vendor"
   - "build"
-
-tests:
-  paths:
-    - tests/
