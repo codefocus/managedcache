@@ -6,13 +6,12 @@ use BadFunctionCallException;
 use Exception;
 use Illuminate\Cache\MemcachedStore;
 use Illuminate\Cache\Repository as CacheRepository;
-use Illuminate\Contracts\Cache\Store as StoreContract;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 
 /**
- * ManagedCache
+ * ManagedCache.
  *
  * @method DefinitionChain forgetWhen(array $conditions)
  */
@@ -156,7 +155,7 @@ class ManagedCache
         //  -   this Eloquent event, AND
         //  -   this Model class
         $cacheTags = [
-            new Condition($eventName, $modelName)
+            new Condition($eventName, $modelName),
         ];
         foreach ($payload as $model) {
             if ( ! $this->isModel($model)) {
@@ -180,7 +179,7 @@ class ManagedCache
         //  -   this Eloquent event, AND
         //  -   this Model instance
         $cacheTags = [
-            new Condition($eventName, $modelName, $modelId)
+            new Condition($eventName, $modelName, $modelId),
         ];
         //	Create tags for related models.
         foreach ($this->extractModelKeys($model) as $relatedModelName => $relatedModelId) {
@@ -377,7 +376,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/** @scrutinizer ignore-call */getKey();
+            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
@@ -412,7 +411,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/** @scrutinizer ignore-call */getKey();
+            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
@@ -447,7 +446,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/** @scrutinizer ignore-call */getKey();
+            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
@@ -470,7 +469,7 @@ class ManagedCache
      */
     protected function isModel($value): bool
     {
-        return (is_object($value) && is_subclass_of($value, Model::class));
+        return is_object($value) && is_subclass_of($value, Model::class);
     }
 
     /**

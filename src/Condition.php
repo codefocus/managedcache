@@ -84,7 +84,7 @@ class Condition
     }
 
     /**
-     * Get Relation Tag Part
+     * Get Relation Tag Part.
      *
      * @return string
      */
@@ -103,11 +103,11 @@ class Condition
     }
 
     /**
-     * Get Relation Tag Part
+     * Get Relation Tag Part.
      *
      * @return string|null
      */
-    protected function getRelationTagPart(): string|null
+    protected function getRelationTagPart(): ?string
     {
         if (null === $this->relatedModelId) {
             if (null === $this->relatedModelName) {
