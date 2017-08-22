@@ -151,16 +151,14 @@ class ManagedCache
         $eventName = $matches[1];
         $modelName = $matches[2];
         //  Ensure $payload is always an array.
-        if ( ! is_array($payload)) {
-            $payload = [$payload];
-        }
-        //  Flush items that are tagged with this event (and no model).
-        //	i.e. items that should be flushed when this event happens to ANY instance of the model.
-        $cacheTags = [];
+        $payload = (is_array($payload)) ? $payload : [$payload];
+
         //  Create a tag to flush stores tagged with:
         //  -   this Eloquent event, AND
         //  -   this Model class
-        $cacheTags[] = new Condition($eventName, $modelName);
+        $cacheTags = [
+            new Condition($eventName, $modelName)
+        ];
         foreach ($payload as $model) {
             if ( ! $this->isModel($model)) {
                 continue;
@@ -173,15 +171,16 @@ class ManagedCache
                 $cacheTags[] = new Condition($eventName, $modelName, $modelId);
             }
             //	Create tags for related models.
-            foreach ($this->extractModelKeys($model->getAttributes()) as $relatedModelName => $relatedModelId) {
+            foreach ($this->extractModelKeys($model) as $relatedModelName => $relatedModelId) {
                 //	Flush cached items that are tagged through a relation
                 //	with this model.
-                if ('delete' === $eventName) {
-                    $relatedEventName = 'detach';
-                } else {
-                    $relatedEventName = 'attach';
-                }
-                $cacheTags[] = new Condition($relatedEventName, $modelName, $modelId, $relatedModelName, $relatedModelId);
+                $cacheTags[] = new Condition(
+                    (self::EVENT_ELOQUENT_DELETED === $eventName) ? self::EVENT_ELOQUENT_DETACHED : self::EVENT_ELOQUENT_ATTACHED,
+                    $modelName,
+                    $modelId,
+                    $relatedModelName,
+                    $relatedModelId
+                );
             }
         }
         //	Flush all stores with these tags
@@ -205,16 +204,16 @@ class ManagedCache
     }
 
     /**
-     * extractModelKeys function.
+     * Extract attributes that act as foreign keys.
      *
-     * @param array $attributeNames
+     * @param Model $model An Eloquent Model instance
      *
      * @return array
      */
-    protected function extractModelKeys(array $attributeNames)
+    protected function extractModelKeys(Model $model)
     {
         $modelKeys = [];
-        foreach ($attributeNames as $attributeName => $value) {
+        foreach ($model->getAttributes() as $attributeName => $value) {
             if (preg_match('/([^_]+)_id/', $attributeName, $matches)) {
                 //	This field is a key
                 $modelKeys[strtolower($matches[1])] = $value;
