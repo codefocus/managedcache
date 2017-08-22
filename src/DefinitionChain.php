@@ -132,7 +132,7 @@ class DefinitionChain implements StoreContract
 
             $value = value($default);
         }
-        
+
         return $value;
     }
 
@@ -152,7 +152,7 @@ class DefinitionChain implements StoreContract
     {
         //  Store the cache tags for this key,
         //  so that we can GET it without specifying the tags.
-        $this->managedCache->setTagsForKey($key, $tags);
+        $this->managedCache->setTagsForKey($key, $this->getConditionTags());
 
         return $this->getTaggedStore()->put($key, $value, $minutes);
     }

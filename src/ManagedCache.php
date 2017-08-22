@@ -70,7 +70,7 @@ class ManagedCache
     public function getTagMap(): array
     {
         if (empty($this->tagMap)) {
-            $this->tagMap = $this->store->get(self::TAG_MAP_CACHE_KEY. []);
+            $this->tagMap = $this->store->get(self::TAG_MAP_CACHE_KEY, []);
             if (!is_array($this->tagMap)) {
                 $this->tagMap = [];
             }
@@ -293,7 +293,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_UPDATED,
+            self::EVENT_ELOQUENT_SAVED,
             $modelClassName,
             $modelId
         );
@@ -319,7 +319,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_UPDATED,
+            self::EVENT_ELOQUENT_DELETED,
             $modelClassName,
             $modelId
         );
@@ -345,7 +345,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_UPDATED,
+            self::EVENT_ELOQUENT_RESTORED,
             $modelClassName,
             $modelId
         );
