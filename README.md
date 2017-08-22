@@ -3,6 +3,9 @@
 [![Build Status][ico-travis]][link-travis]
 [![Code coverage][ico-codecov]][link-codecov]
 [![Quality Score][ico-code-quality]][link-code-quality]
+[![StyleCI][ico-styleci]][link-styleci]
+<a href="https://styleci.io/repos/15239209"><img src="https://styleci.io/repos/15239209/shield" alt="StyleCI Status"></img></a>
+
 [![Total Downloads][ico-downloads]][link-downloads]
 
 # ManagedCache
@@ -161,12 +164,14 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [ico-travis]: https://img.shields.io/travis/codefocus/managedcache/master.svg?style=flat-square
 [ico-codecov]: https://img.shields.io/codecov/c/github/codefocus/managedcache.svg
 [ico-code-quality]: https://img.shields.io/scrutinizer/g/codefocus/managedcache.svg?style=flat-square
+[ico-styleci]: https://styleci.io/repos/100775975/shield
 [ico-downloads]: https://img.shields.io/packagist/dt/codefocus/managedcache.svg?style=flat-square
 
 [link-packagist]: https://packagist.org/packages/codefocus/managedcache
 [link-travis]: https://travis-ci.org/codefocus/managedcache
 [link-codecov]: https://codecov.io/gh/codefocus/managedcache
 [link-code-quality]: https://scrutinizer-ci.com/g/codefocus/managedcache
+[link-styleci]: https://styleci.io/repos/100775975
 [link-downloads]: https://packagist.org/packages/codefocus/managedcache
 [link-author]: https://github.com/codefocus
 [link-contributors]: ../../contributors

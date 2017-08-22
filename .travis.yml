@@ -13,8 +13,8 @@ before_script:
   - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
 
 script:
-  - phpunit --coverage-text --coverage-clover=coverage.clover
+  - vendor/bin/phpunit --coverage-text --coverage-clover=coverage.clover
 
 after_script:
-  - bash <(curl -s https://codecov.io/bash) -t f97c6882-e454-4f0b-9d5b-5c5fd3bd0e30
+  - bash <(curl -s https://codecov.io/bash)
   # - php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover
