@@ -254,7 +254,7 @@ class ManagedCache
      */
     public function updated($model, ?int $modelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
@@ -280,7 +280,7 @@ class ManagedCache
      */
     public function saved($model, ?int $modelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
@@ -306,7 +306,7 @@ class ManagedCache
      */
     public function deleted($model, ?int $modelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
@@ -332,7 +332,7 @@ class ManagedCache
      */
     public function restored($model, ?int $modelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
@@ -359,13 +359,13 @@ class ManagedCache
      */
     public function relationAttached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
             $modelClassName = $model;
         }
-        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+        if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
             $relatedModelId = $relatedModel->getKey();
         } else {
@@ -394,13 +394,13 @@ class ManagedCache
      */
     public function relationDetached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
             $modelClassName = $model;
         }
-        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+        if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
             $relatedModelId = $relatedModel->getKey();
         } else {
@@ -429,13 +429,13 @@ class ManagedCache
      */
     public function relationUpdated($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
-        if (is_object($model) && is_subclass_of($model, Model::class)) {
+        if ($this->isModel($model)) {
             $modelClassName = get_class($model);
             $modelId = $model->getKey();
         } else {
             $modelClassName = $model;
         }
-        if (is_object($relatedModel) && is_subclass_of($relatedModel, Model::class)) {
+        if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
             $relatedModelId = $relatedModel->getKey();
         } else {
