@@ -16,4 +16,4 @@ script:
   - phpunit --coverage-text --coverage-clover=coverage.clover
 
 after_script:
-  - if [[$TRAVIS_PHP_VERSION != '7.1' ]]; then php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover; fi
+  - php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover

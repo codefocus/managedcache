@@ -1,14 +1,8 @@
 tools:
     php_cs_fixer: true
+    external_code_coverage: true
 
 build:
-    tests:
-        override:
-            -
-                command: 'vendor/bin/phpunit --coverage-clover=build/logs/clover.xml'
-                coverage:
-                    file: 'build/logs/clover.xml'
-                    format: 'clover'
     nodes:
         analysis:
             project_setup:
