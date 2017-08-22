@@ -134,31 +134,26 @@ class ManagedCache
      */
     public function handleEloquentEvent($eventKey, $payload): void
     {
+        //  Extract the basic event name and the model name from the event key.
         $regex = '/^(' . implode('|', $this->getObservableEvents()) . '): ([a-zA-Z0-9\\\\]+)$/';
-
         if ( ! preg_match($regex, $eventKey, $matches)) {
             return;
         }
-
         $eventName = $matches[1];
         $modelName = $matches[2];
-
         //  Ensure $payload is always an array.
         if ( ! is_array($payload)) {
             $payload = [$payload];
         }
-
         //  Flush items that are tagged with this event (and no model).
         //	i.e. items that should be flushed when this event happens to ANY instance of the model.
         $cacheTags = [];
-
         //  Create a tag to flush stores tagged with:
         //  -   this Eloquent event, AND
         //  -   this Model class
         $cacheTags[] = new Condition($eventName, $modelName);
-
         foreach ($payload as $model) {
-            if ( ! is_object($model) || ! is_subclass_of($model, Model::class)) {
+            if ( ! $this->isModel($model)) {
                 continue;
             }
             $modelId = $model->getKey();
@@ -168,27 +163,18 @@ class ManagedCache
                 //  -   this Model instance
                 $cacheTags[] = new Condition($eventName, $modelName, $modelId);
             }
-
-            //  @TODO:  Related models.
-
-            //	Flush cache for related models.
-            //		E.g.
-            //			-	A ballot has user_id = 30
-            //			-	Flush cache tagged "ManagedCache:forget:attach-ballot-user=30"
-            $modelKeys = $this->extractModelKeys($model->getAttributes());
-            foreach ($modelKeys as $relatedModelName => $relatedModelId) {
+            //	Create tags for related models.
+            foreach ($this->extractModelKeys($model->getAttributes()) as $relatedModelName => $relatedModelId) {
                 //	Flush cached items that are tagged through a relation
                 //	with this model.
                 if ('delete' === $eventName) {
                     $relatedEventName = 'detach';
                 } else {
-                    $relatedEventName = 'attach.' . $eventName;
+                    $relatedEventName = 'attach';
                 }
-                $cacheTags[] = new Condition($relatedEventName, $modelName, $modelId);
-                $cacheTags[] = Condition::makeTag($relatedEventName, $modelName, null, $relatedModelName, $relatedModelId);
+                $cacheTags[] = new Condition($relatedEventName, $modelName, $modelId, $relatedModelName, $relatedModelId);
             }
         }
-
         //	Flush all stores with these tags
         $this->forgetWhen($cacheTags)->flush();
     }
@@ -454,6 +440,18 @@ class ManagedCache
             $relatedModelClassName,
             $relatedModelId
         );
+    }
+
+    /**
+     * Return whether the specified class name is an Eloquent Model.
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    protected function isModel($value): bool
+    {
+        return (is_object($value) && is_subclass_of($value, Model::class));
     }
 
     /**
