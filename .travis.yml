@@ -16,4 +16,5 @@ script:
   - phpunit --coverage-text --coverage-clover=coverage.clover
 
 after_script:
-  - php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover
+  - bash <(curl -s https://codecov.io/bash) -t f97c6882-e454-4f0b-9d5b-5c5fd3bd0e30
+  # - php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover
