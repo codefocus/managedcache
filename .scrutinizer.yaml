@@ -2,13 +2,6 @@ tools:
     php_cs_fixer: true
 
 build:
-    tests:
-        override:
-            -
-                command: 'vendor/bin/phpunit --coverage-clover=codecoverage'
-                coverage:
-                    file: 'codecoverage'
-                    format: 'clover'
     nodes:
         analysis:
             project_setup:
@@ -20,6 +13,11 @@ build:
                     -
                         command: phpcs-run
                         use_website_config: true
+                    -
+                        command: 'vendor/bin/phpunit --coverage-clover=coverage.clover'
+                        coverage:
+                            file: 'coverage.clover'
+                            format: 'clover'
             environment:
                 node:
                     version: 6.0.0
