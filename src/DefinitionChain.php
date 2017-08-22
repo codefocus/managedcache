@@ -109,7 +109,7 @@ class DefinitionChain implements StoreContract
     /**
      * Return the cache store, after applying our conditions to it, as tags.
      *
-     * @param ?array $tags
+     * @param array|null $tags (default: null)
      *
      * @return TaggedCache
      */

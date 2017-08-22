@@ -11,6 +11,11 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 
+/**
+ * ManagedCache
+ *
+ * @method DefinitionChain forgetWhen(array $conditions)
+ */
 class ManagedCache
 {
     //  Eloquent events.
@@ -22,8 +27,7 @@ class ManagedCache
     //  Relation events.
     const EVENT_ELOQUENT_ATTACHED = 'eloquent.attached';
     const EVENT_ELOQUENT_DETACHED = 'eloquent.detached';
-
-    //  ..
+    //  Cache keys.
     const TAG_MAP_CACHE_KEY = 'ManagedCache_TagMap';
 
     /**
@@ -32,12 +36,17 @@ class ManagedCache
     protected $dispatcher;
 
     /**
-     * @var StoreContract
+     * @var CacheRepository
      */
     protected $store;
 
     private $isDebugModeEnabled = false;
 
+    /**
+     * Maps cache keys to their tags.
+     *
+     * @var array
+     */
     protected $tagMap = [];
 
     /**
@@ -239,7 +248,7 @@ class ManagedCache
      * is updated.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId The Model id
+     * @param int|null $modelId (default: null) The Model id
      *
      * @return Condition
      */
@@ -265,7 +274,7 @@ class ManagedCache
      * is saved.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId The Model id
+     * @param int|null $modelId (default: null) The Model id
      *
      * @return Condition
      */
@@ -291,7 +300,7 @@ class ManagedCache
      * is deleted.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId The Model id
+     * @param int|null $modelId (default: null) The Model id
      *
      * @return Condition
      */
@@ -317,7 +326,7 @@ class ManagedCache
      * is restored.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId The Model id
+     * @param int|null $modelId (default: null) The Model id
      *
      * @return Condition
      */
@@ -342,9 +351,9 @@ class ManagedCache
      * a related Model of the specified class is attached.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId the Model id, if $model is a class name
-     * @param mixed $relatedModel the related Model instance or class name
-     * @param ?int $relatedModelId the related Model id
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
      *
      * @return Condition
      */
@@ -377,9 +386,9 @@ class ManagedCache
      * a related Model of the specified class is detached.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId the Model id, if $model is a class name
-     * @param mixed $relatedModel the related Model instance or class name
-     * @param ?int $relatedModelId the related Model id
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
      *
      * @return Condition
      */
@@ -412,9 +421,9 @@ class ManagedCache
      * a related Model of the specified class is updated.
      *
      * @param mixed $model model instance or class name
-     * @param ?int $modelId the Model id, if $model is a class name
-     * @param mixed $relatedModel the related Model instance or class name
-     * @param ?int $relatedModelId the related Model id
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
      *
      * @return Condition
      */

@@ -27,10 +27,10 @@ class Condition
      * Constructor.
      *
      * @param string $eventName
-     * @param ?string $modelName (default: null)
-     * @param ?integer $modelId (default: null)
-     * @param ?string $relatedModelName (default: null)
-     * @param ?integer $relatedModelId (default: null)
+     * @param string|null $modelName (default: null)
+     * @param int|null $modelId (default: null)
+     * @param string|null $relatedModelName (default: null)
+     * @param int|null $relatedModelId (default: null)
      */
     public function __construct(
         string $eventName,
