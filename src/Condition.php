@@ -66,7 +66,6 @@ class Condition
         }
         $modelTagPart = $this->getModelTagPart();
         $relationTagPart = $this->getRelationTagPart();
-
         if ($relationTagPart) {
             return
                 self::CACHE_TAG_PREFIX .

@@ -13,6 +13,8 @@ class DefinitionChain implements StoreContract
 
     protected $conditions = [];
 
+    protected $conditionTags = null;
+
     /**
      * Constructor.
      *
@@ -24,29 +26,58 @@ class DefinitionChain implements StoreContract
         $this->store = $managedCache->getStore();
     }
 
+    /**
+     * Sets the array of Conditions that trigger the cache key to get flushed.
+     *
+     * @param array $conditions An array of Condition instances
+     *
+     * @return self
+     */
     public function forgetWhen(array $conditions): self
     {
         $this->conditions = $conditions;
+        $this->conditionTags = null;
 
         // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
 
         return $this;
     }
 
+    /**
+     * Adds a Condition that triggers the cache key to get flushed.
+     *
+     * @param Condition $condition
+     *
+     * @return self
+     */
     public function addCondition(Condition $condition): self
     {
         $this->conditions[] = $condition;
+        $this->conditionTags = null;
 
         return $this;
     }
 
+    /**
+     * Adds an array of Conditions that trigger the cache key to get flushed.
+     *
+     * @param array $conditions An array of Condition instances
+     *
+     * @return self
+     */
     public function addConditions(array $conditions): self
     {
         $this->conditions += $conditions;
+        $this->conditionTags = null;
 
         return $this;
     }
 
+    /**
+     * Returns an array of Condition instances.
+     *
+     * @return array
+     */
     public function getConditions(): array
     {
         return $this->conditions;
@@ -59,18 +90,20 @@ class DefinitionChain implements StoreContract
      */
     public function getConditionTags(): array
     {
-        $tags = [];
-        foreach ($this->conditions as $condition) {
-            $tags[] = (string) $condition;
+        if (empty($this->conditionTags)) {
+            $tags = [];
+            foreach ($this->conditions as $condition) {
+                $tags[] = (string) $condition;
+            }
+            //  @TODO:  Remove this.
+            //          Potentially replace with a call to ManagedCache::log()
+            if ($this->managedCache->isDebugModeEnabled()) {
+                dump($tags);
+            }
+            $this->conditionTags = $tags;
         }
 
-        //  @TODO:  Remove this.
-        //          Potentially replace with a call to ManagedCache::log()
-        if ($this->managedCache->isDebugModeEnabled()) {
-            dump($tags);
-        }
-
-        return $tags;
+        return $this->conditionTags;
     }
 
     /**
@@ -78,17 +111,29 @@ class DefinitionChain implements StoreContract
      *
      * @return TaggedCache
      */
-    public function getTaggedStore(): TaggedCache
+    public function getTaggedStore(?array $tags = null): TaggedCache
     {
+        if ($tags !== null) {
+            return $this->store->tags($tags);
+        }
+
         return $this->store->tags($this->getConditionTags());
     }
 
     /**
      * @inheritdoc
      */
-    public function get($key)
+    public function get($key, $default = null)
     {
-        return $this->getTaggedStore()->get($key);
+        $value = $this->getTaggedStore($this->managedCache->getTagsForKey($key))->get($key);
+        // If we could not find the cache value, we will get the default value
+        // for this cache key. This default may be a callback.
+        if (is_null($value)) {
+
+            $value = value($default);
+        }
+        
+        return $value;
     }
 
     /**
@@ -96,6 +141,7 @@ class DefinitionChain implements StoreContract
      */
     public function many(array $keys)
     {
+        //  @TODO:  $this->managedCache->getTagsForKeys plural
         return $this->getTaggedStore()->many($keys);
     }
 
@@ -104,6 +150,10 @@ class DefinitionChain implements StoreContract
      */
     public function put($key, $value, $minutes)
     {
+        //  Store the cache tags for this key,
+        //  so that we can GET it without specifying the tags.
+        $this->managedCache->setTagsForKey($key, $tags);
+
         return $this->getTaggedStore()->put($key, $value, $minutes);
     }
 
@@ -112,6 +162,7 @@ class DefinitionChain implements StoreContract
      */
     public function putMany(array $values, $minutes)
     {
+        //  @TODO:Store tags for keys plural.
         return $this->getTaggedStore()->putMany($values, $minutes);
     }
 
@@ -144,6 +195,8 @@ class DefinitionChain implements StoreContract
      */
     public function forget($key)
     {
+        $this->managedCache->deleteTagsForKey($key);
+
         return $this->getTaggedStore()->forget($key);
     }
 

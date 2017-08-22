@@ -23,6 +23,9 @@ class ManagedCache
     const EVENT_ELOQUENT_ATTACHED = 'eloquent.attached';
     const EVENT_ELOQUENT_DETACHED = 'eloquent.detached';
 
+    //  ..
+    const TAG_MAP_CACHE_KEY = 'ManagedCache_TagMap';
+
     /**
      * @var Dispatcher
      */
@@ -34,6 +37,8 @@ class ManagedCache
     protected $store;
 
     private $isDebugModeEnabled = false;
+
+    protected $tagMap = [];
 
     /**
      * Constructor.
@@ -60,6 +65,44 @@ class ManagedCache
     public function isDebugModeEnabled()
     {
         return $this->isDebugModeEnabled;
+    }
+
+    public function getTagMap(): array
+    {
+        if (empty($this->tagMap)) {
+            $this->tagMap = $this->store->get(self::TAG_MAP_CACHE_KEY. []);
+            if (!is_array($this->tagMap)) {
+                $this->tagMap = [];
+            }
+        }
+
+        return $this->tagMap;
+    }
+
+    public function getTagsForKey(string $key): array
+    {
+        $tagMap = $this->getTagMap();
+        if (!isset($tagMap[$key])) {
+            return [];
+        }
+
+        return $tagMap[$key];
+    }
+
+    public function setTagsForKey(string $key, array $tags): void
+    {
+        $this->getTagMap();
+        $this->tagMap[$key] = $tags;
+        $this->store->forever(self::TAG_MAP_CACHE_KEY, $this->tagMap);
+    }
+
+    public function deleteTagsForKey(string $key)
+    {
+        $this->getTagMap();
+        if (isset($this->tagMap[$key])) {
+            unset($this->tagMap[$key]);
+            $this->store->forever(self::TAG_MAP_CACHE_KEY, $this->tagMap);
+        }
     }
 
     /**
