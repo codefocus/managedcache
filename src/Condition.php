@@ -66,7 +66,7 @@ class Condition
         }
         $modelTagPart = $this->getModelTagPart();
         $relationTagPart = $this->getRelationTagPart();
-        if ($relationTagPart) {
+        if (null === $relationTagPart) {
             return
                 self::CACHE_TAG_PREFIX .
                 $this->eventName .
@@ -83,7 +83,12 @@ class Condition
             $modelTagPart;
     }
 
-    protected function getModelTagPart()
+    /**
+     * Get Relation Tag Part
+     *
+     * @return string
+     */
+    protected function getModelTagPart(): string
     {
         if (null === $this->modelId) {
             //  Any instance of this model.
@@ -97,7 +102,12 @@ class Condition
             self::CACHE_TAG_ID_CLOSE;
     }
 
-    protected function getRelationTagPart()
+    /**
+     * Get Relation Tag Part
+     *
+     * @return string|null
+     */
+    protected function getRelationTagPart(): string|null
     {
         if (null === $this->relatedModelId) {
             if (null === $this->relatedModelName) {
