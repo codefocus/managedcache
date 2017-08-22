@@ -1,7 +1,7 @@
 {
     "name": "codefocus/managedcache",
     "type": "library",
-    "description": "ManagedCache description",
+    "description": "Self-invalidating cache for Laravel",
     "keywords": [
         "codefocus",
         "managedcache",
