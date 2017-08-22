@@ -367,7 +367,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->getKey();
+            $relatedModelId = $relatedModel/** @scrutinizer ignore-call */->getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
@@ -402,7 +402,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->getKey();
+            $relatedModelId = $relatedModel/** @scrutinizer ignore-call */->getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
@@ -437,7 +437,7 @@ class ManagedCache
         }
         if ($this->isModel($relatedModel)) {
             $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->getKey();
+            $relatedModelId = $relatedModel/** @scrutinizer ignore-call */->getKey();
         } else {
             $relatedModelClassName = $relatedModel;
         }
