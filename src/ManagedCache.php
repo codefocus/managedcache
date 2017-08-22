@@ -71,7 +71,7 @@ class ManagedCache
     {
         if (empty($this->tagMap)) {
             $this->tagMap = $this->store->get(self::TAG_MAP_CACHE_KEY, []);
-            if (!is_array($this->tagMap)) {
+            if ( ! is_array($this->tagMap)) {
                 $this->tagMap = [];
             }
         }
@@ -82,7 +82,7 @@ class ManagedCache
     public function getTagsForKey(string $key): array
     {
         $tagMap = $this->getTagMap();
-        if (!isset($tagMap[$key])) {
+        if ( ! isset($tagMap[$key])) {
             return [];
         }
 

@@ -109,6 +109,8 @@ class DefinitionChain implements StoreContract
     /**
      * Return the cache store, after applying our conditions to it, as tags.
      *
+     * @param ?array $tags
+     *
      * @return TaggedCache
      */
     public function getTaggedStore(?array $tags = null): TaggedCache
@@ -129,7 +131,6 @@ class DefinitionChain implements StoreContract
         // If we could not find the cache value, we will get the default value
         // for this cache key. This default may be a callback.
         if (is_null($value)) {
-
             $value = value($default);
         }
 

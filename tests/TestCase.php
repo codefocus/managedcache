@@ -2,10 +2,10 @@
 
 namespace Codefocus\ManagedCache\Tests;
 
-use Illuminate\Database\Eloquent\Factory as ModelFactory;
-use Codefocus\ManagedCache\Tests\Models\User;
 use Codefocus\ManagedCache\Providers\ManagedCacheProvider;
 use Codefocus\ManagedCache\Tests\Mock\CacheServiceProvider;
+use Codefocus\ManagedCache\Tests\Models\User;
+use Illuminate\Database\Eloquent\Factory as ModelFactory;
 use Illuminate\Support\Facades\Cache;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Orchestra\Testbench\Traits\WithLaravelMigrations;
@@ -54,7 +54,6 @@ abstract class TestCase extends BaseTestCase
         ]);
         $app['config']->set('database.default', 'testbench');
     }
-
 
     public function setUp()
     {

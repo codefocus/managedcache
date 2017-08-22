@@ -2,8 +2,8 @@
 
 namespace Codefocus\ManagedCache\Tests;
 
-use Codefocus\ManagedCache\Tests\Models\User;
 use Codefocus\ManagedCache\Facades\ManagedCache;
+use Codefocus\ManagedCache\Tests\Models\User;
 // use Codefocus\ManagedCache\ManagedCache;
 use Event;
 use Faker\Generator;
@@ -19,7 +19,7 @@ class TaggedTest extends TestCase
         parent::setUp();
 
         $this->data = [
-            'value' => 'test',//User::all()->toArray(),
+            'value' => 'test', //User::all()->toArray(),
             'minutes' => 10,
             'key' => 'test-users-all',
             'tags' => [
@@ -66,7 +66,7 @@ class TaggedTest extends TestCase
             ManagedCache::created(User::class),
             ManagedCache::saved(User::class),
             ManagedCache::deleted(User::class),
-            ManagedCache::restored(User::class)
+            ManagedCache::restored(User::class),
         ])
         ->put($this->data['key'], $this->data['value'], $this->data['minutes']);
 
@@ -85,7 +85,7 @@ class TaggedTest extends TestCase
             ManagedCache::created(User::class),
             ManagedCache::saved(User::class),
             ManagedCache::deleted(User::class),
-            ManagedCache::restored(User::class)
+            ManagedCache::restored(User::class),
         ])
         ->put($this->data['key'], $this->data['value'], $this->data['minutes']);
 
@@ -105,12 +105,12 @@ class TaggedTest extends TestCase
             ManagedCache::created(User::class),
             ManagedCache::saved(User::class),
             ManagedCache::deleted(User::class),
-            ManagedCache::restored(User::class)
+            ManagedCache::restored(User::class),
         ])
         ->put($this->data['key'], $this->data['value'], $this->data['minutes']);
 
         //  Retrieve value from cache, without specifying the tags.
-        $value = ManagedCache::get($this->data['key'], function() {
+        $value = ManagedCache::get($this->data['key'], function () {
             return 'incorrect';
         });
 
@@ -123,7 +123,7 @@ class TaggedTest extends TestCase
     public function testMissingCacheIsReadWithCallback()
     {
         //  Attempt to retrieve missing value from cache.
-        $value = ManagedCache::get(random_bytes(32), function() {
+        $value = ManagedCache::get(random_bytes(32), function () {
             return 'missing';
         });
 
@@ -140,7 +140,7 @@ class TaggedTest extends TestCase
             ManagedCache::created(User::class),
             ManagedCache::saved(User::class),
             ManagedCache::deleted(User::class),
-            ManagedCache::restored(User::class)
+            ManagedCache::restored(User::class),
         ])
         ->put($this->data['key'], $this->data['value'], $this->data['minutes']);
 
@@ -154,5 +154,4 @@ class TaggedTest extends TestCase
         $value = ManagedCache::get($this->data['key']);
         $this->assertEquals(null, $value);
     }
-
 }
