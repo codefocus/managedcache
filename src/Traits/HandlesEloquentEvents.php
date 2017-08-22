@@ -3,7 +3,6 @@
 namespace Codefocus\ManagedCache\Traits;
 
 use Codefocus\ManagedCache\Condition;
-use Codefocus\ManagedCache\DefinitionChain;
 use Codefocus\ManagedCache\Events\Event;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
@@ -142,5 +141,4 @@ trait HandlesEloquentEvents
 
         return $modelKeys;
     }
-
 }
