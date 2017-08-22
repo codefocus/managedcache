@@ -10,7 +10,7 @@ class Condition
     const CACHE_TAG_PREFIX = 'ManagedCache:';
     const CACHE_TAG_SEPARATOR = '-';
     const CACHE_TAG_ID_OPEN = '(';
-    const CACHE_TAG_ID_CLOSE = '(';
+    const CACHE_TAG_ID_CLOSE = ')';
     const CACHE_TAG_RELATED = '->';
 
     protected $eventName = null;
@@ -64,42 +64,55 @@ class Condition
                 self::CACHE_TAG_PREFIX .
                 $this->eventName;
         }
-        if (null === $this->modelId) {
-            if (null !== $this->relatedModelName and null !== $this->relatedModelId) {
-                //  All events of this type
-                //  linked to a model of this type
-                //  and related to the specified related model
-                //  trigger a flush.
-                return
-                    self::CACHE_TAG_PREFIX .
-                    $this->eventName .
-                    self::CACHE_TAG_SEPARATOR .
-                    $this->modelName .
-                    self::CACHE_TAG_RELATED .
-                    $this->relatedModelName .
-                    self::CACHE_TAG_ID_OPEN .
-                    $this->relatedModelId .
-                    self::CACHE_TAG_ID_CLOSE;
-            }
-            //  All events of this type
-            //  linked to a model of this type
-            //  trigger a flush.
+        $modelTagPart = $this->getModelTagPart();
+        $relationTagPart = $this->getRelationTagPart();
+
+        if ($relationTagPart) {
             return
                 self::CACHE_TAG_PREFIX .
                 $this->eventName .
                 self::CACHE_TAG_SEPARATOR .
-                $this->modelName;
+                $modelTagPart .
+                self::CACHE_TAG_SEPARATOR .
+                $relationTagPart;
         }
-        //  All events of this type
-        //  linked to the specific model specified
-        //  trigger a flush.
+
         return
             self::CACHE_TAG_PREFIX .
             $this->eventName .
             self::CACHE_TAG_SEPARATOR .
-            $this->modelName .
+            $modelTagPart;
+    }
+
+    protected function getModelTagPart()
+    {
+        if (null === $this->modelId) {
+            //  Any instance of this model.
+            return $this->modelName;
+        }
+
+        //  Only the instance of this model with this id.
+        return $this->modelName .
             self::CACHE_TAG_ID_OPEN .
             $this->modelId .
+            self::CACHE_TAG_ID_CLOSE;
+    }
+
+    protected function getRelationTagPart()
+    {
+        if (null === $this->relatedModelId) {
+            if (null === $this->relatedModelName) {
+                //  No relation specified.
+                return null;
+            }
+            //  Any instance of this related model.
+            return $this->relatedModelName;
+        }
+
+        //  Only the instance of this related model with this id.
+        return $this->relatedModelName .
+            self::CACHE_TAG_ID_OPEN .
+            $this->relatedModelId .
             self::CACHE_TAG_ID_CLOSE;
     }
 

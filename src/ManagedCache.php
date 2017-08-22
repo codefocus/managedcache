@@ -9,15 +9,17 @@ use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Cache\Store as StoreContract;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Application;
 
 class ManagedCache
 {
+    //  Eloquent events.
     const EVENT_ELOQUENT_CREATED = 'eloquent.created';
     const EVENT_ELOQUENT_UPDATED = 'eloquent.updated';
     const EVENT_ELOQUENT_SAVED = 'eloquent.saved';
     const EVENT_ELOQUENT_DELETED = 'eloquent.deleted';
     const EVENT_ELOQUENT_RESTORED = 'eloquent.restored';
-
+    //  Relation events.
     const EVENT_ELOQUENT_ATTACHED = 'eloquent.attached';
     const EVENT_ELOQUENT_DETACHED = 'eloquent.detached';
 
@@ -36,15 +38,15 @@ class ManagedCache
     /**
      * Constructor.
      *
-     * @param Dispatcher $dispatcher
+     * @param Application $application
      */
-    public function __construct(Dispatcher $dispatcher)
+    public function __construct(Application $application)
     {
-        $this->store = app('cache.store');
+        $this->store = $application['cache.store'];
         if ( ! ($this->store->getStore() instanceof MemcachedStore)) {
             throw new Exception('Memcached not configured. Cache store is "' . class_basename($this->store) . '"');
         }
-        $this->dispatcher = $dispatcher;
+        $this->dispatcher = $application['events'];
         $this->registerEventListener();
     }
 
@@ -186,8 +188,6 @@ class ManagedCache
         return $modelKeys;
     }
 
-    //	function extractModelKeys
-
     /**
      * Returns a Condition instance that tags a cache to get invalidated
      * when a new Model of the specified class is created.
@@ -214,7 +214,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function updated($model, ?int $modelId): Condition
+    public function updated($model, ?int $modelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -240,7 +240,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function saved($model, ?int $modelId): Condition
+    public function saved($model, ?int $modelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -266,7 +266,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function deleted($model, ?int $modelId): Condition
+    public function deleted($model, ?int $modelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -292,7 +292,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function restored($model, ?int $modelId): Condition
+    public function restored($model, ?int $modelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -319,7 +319,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function relationAttached($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    public function relationAttached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -354,7 +354,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function relationDetached($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    public function relationDetached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
@@ -389,7 +389,7 @@ class ManagedCache
      *
      * @return Condition
      */
-    public function relationUpdated($model, ?int $modelId, $relatedModel = null, ?int $relatedModelId): Condition
+    public function relationUpdated($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
     {
         if (is_object($model) && is_subclass_of($model, Model::class)) {
             $modelClassName = get_class($model);
