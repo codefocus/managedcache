@@ -3,10 +3,11 @@
 namespace Codefocus\ManagedCache;
 
 use BadFunctionCallException;
+use Codefocus\ManagedCache\Events\Event;
+use Codefocus\ManagedCache\Traits\HandlesEloquentEvents;
 use Exception;
 use Illuminate\Cache\MemcachedStore;
 use Illuminate\Cache\Repository as CacheRepository;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 
@@ -17,22 +18,15 @@ use Illuminate\Foundation\Application;
  */
 class ManagedCache
 {
-    //  Eloquent events.
-    const EVENT_ELOQUENT_CREATED = 'eloquent.created';
-    const EVENT_ELOQUENT_UPDATED = 'eloquent.updated';
-    const EVENT_ELOQUENT_SAVED = 'eloquent.saved';
-    const EVENT_ELOQUENT_DELETED = 'eloquent.deleted';
-    const EVENT_ELOQUENT_RESTORED = 'eloquent.restored';
-    //  Relation events.
-    const EVENT_ELOQUENT_ATTACHED = 'eloquent.attached';
-    const EVENT_ELOQUENT_DETACHED = 'eloquent.detached';
+    use HandlesEloquentEvents;
+
     //  Cache keys.
     const TAG_MAP_CACHE_KEY = 'ManagedCache_TagMap';
 
     /**
-     * @var Dispatcher
+     * @var Application
      */
-    protected $dispatcher;
+    protected $application;
 
     /**
      * @var CacheRepository
@@ -55,12 +49,15 @@ class ManagedCache
      */
     public function __construct(Application $application)
     {
-        $this->store = $application['cache.store'];
+        //  Inject Application.
+        $this->application = $application;
+        //  Get the configured cache store.
+        $this->store = $this->application['cache.store'];
         if ( ! ($this->store->getStore() instanceof MemcachedStore)) {
             throw new Exception('Memcached not configured. Cache store is "' . class_basename($this->store) . '"');
         }
-        $this->dispatcher = $application['events'];
-        $this->registerEventListener();
+        //  Register the event listeners.
+        $this->registerEventListener($this->application['events']);
     }
 
     public function enableDebugMode()
@@ -124,118 +121,6 @@ class ManagedCache
     }
 
     /**
-     * Register event listeners.
-     */
-    protected function registerEventListener(): void
-    {
-        //  Register Eloquent event listeners.
-        foreach ($this->getObservableEvents() as $eventKey) {
-            $this->dispatcher->listen($eventKey . ':*', [$this, 'handleEloquentEvent']);
-        }
-    }
-
-    /**
-     * Handle an Eloquent event.
-     *
-     * @param string $eventKey
-     * @param mixed $payload
-     */
-    public function handleEloquentEvent($eventKey, $payload): void
-    {
-        //  Extract the basic event name and the model name from the event key.
-        $regex = '/^(' . implode('|', $this->getObservableEvents()) . '): ([a-zA-Z0-9\\\\]+)$/';
-        if ( ! preg_match($regex, $eventKey, $matches)) {
-            return;
-        }
-        $eventName = $matches[1];
-        $modelName = $matches[2];
-        //  Ensure $payload is always an array.
-        $payload = (is_array($payload)) ? $payload : [$payload];
-        //  Create a tag to flush stores tagged with:
-        //  -   this Eloquent event, AND
-        //  -   this Model class
-        $cacheTags = [
-            new Condition($eventName, $modelName),
-        ];
-        foreach ($payload as $model) {
-            if ( ! $this->isModel($model)) {
-                continue;
-            }
-            $cacheTags += $this->getModelEventTags($model, $eventName);
-        }
-        //	Flush all stores with these tags
-        $this->forgetWhen($cacheTags)->flush();
-    }
-
-    private function getModelEventTags(Model $model, string $eventName)
-    {
-        $modelId = $model->getKey();
-        if (empty($modelId) || ! is_numeric($modelId)) {
-            return [];
-        }
-        $modelId = (int) $modelId;
-        $modelName = get_class($model);
-        //  Create a tag to flush stores tagged with:
-        //  -   this Eloquent event, AND
-        //  -   this Model instance
-        $cacheTags = [
-            new Condition($eventName, $modelName, $modelId),
-        ];
-        //	Create tags for related models.
-        foreach ($this->extractModelKeys($model) as $relatedModelName => $relatedModelId) {
-            //	Flush cached items that are tagged through a relation
-            //	with this model.
-            $cacheTags[] = new Condition(
-                (self::EVENT_ELOQUENT_DELETED === $eventName) ? self::EVENT_ELOQUENT_DETACHED : self::EVENT_ELOQUENT_ATTACHED,
-                $modelName,
-                $modelId,
-                $relatedModelName,
-                $relatedModelId
-            );
-        }
-
-        return $cacheTags;
-    }
-
-    /**
-     * Get the observable event names.
-     *
-     * @return array
-     */
-    protected function getObservableEvents(): array
-    {
-        return [
-            static::EVENT_ELOQUENT_CREATED,
-            static::EVENT_ELOQUENT_UPDATED,
-            static::EVENT_ELOQUENT_SAVED,
-            static::EVENT_ELOQUENT_DELETED,
-            static::EVENT_ELOQUENT_RESTORED,
-        ];
-    }
-
-    /**
-     * Extract attributes that act as foreign keys.
-     *
-     * @param Model $model An Eloquent Model instance
-     *
-     * @return array
-     */
-    protected function extractModelKeys(Model $model)
-    {
-        $modelKeys = [];
-        foreach ($model->getAttributes() as $attributeName => $value) {
-            if (preg_match('/([^_]+)_id/', $attributeName, $matches)) {
-                //	This field is a key
-                $modelKeys[strtolower($matches[1])] = $value;
-            }
-        }
-        //	Ensure our model keys are always in the same order.
-        ksort($modelKeys);
-
-        return $modelKeys;
-    }
-
-    /**
      * Returns a Condition instance that tags a cache to get invalidated
      * when a new Model of the specified class is created.
      *
@@ -246,7 +131,7 @@ class ManagedCache
     public function created(string $modelClassName): Condition
     {
         return new Condition(
-            self::EVENT_ELOQUENT_CREATED,
+            Event::EVENT_ELOQUENT_CREATED,
             $modelClassName
         );
     }
@@ -271,7 +156,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_UPDATED,
+            Event::EVENT_ELOQUENT_UPDATED,
             $modelClassName,
             $modelId
         );
@@ -297,7 +182,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_SAVED,
+            Event::EVENT_ELOQUENT_SAVED,
             $modelClassName,
             $modelId
         );
@@ -323,7 +208,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_DELETED,
+            Event::EVENT_ELOQUENT_DELETED,
             $modelClassName,
             $modelId
         );
@@ -349,7 +234,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_RESTORED,
+            Event::EVENT_ELOQUENT_RESTORED,
             $modelClassName,
             $modelId
         );
@@ -382,7 +267,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_ATTACHED,
+            Event::EVENT_ELOQUENT_ATTACHED,
             $modelClassName,
             $modelId,
             $relatedModelClassName,
@@ -417,7 +302,7 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_DETACHED,
+            Event::EVENT_ELOQUENT_DETACHED,
             $modelClassName,
             $modelId,
             $relatedModelClassName,
@@ -452,24 +337,12 @@ class ManagedCache
         }
 
         return new Condition(
-            self::EVENT_ELOQUENT_UPDATED,
+            Event::EVENT_ELOQUENT_UPDATED,
             $modelClassName,
             $modelId,
             $relatedModelClassName,
             $relatedModelId
         );
-    }
-
-    /**
-     * Return whether the specified class name is an Eloquent Model.
-     *
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    protected function isModel($value): bool
-    {
-        return is_object($value) && is_subclass_of($value, Model::class);
     }
 
     /**

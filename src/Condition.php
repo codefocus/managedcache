@@ -66,14 +66,14 @@ class Condition
         }
         $modelTagPart = $this->getModelTagPart();
         $relationTagPart = $this->getRelationTagPart();
-        if (null === $relationTagPart) {
+        if (null !== $relationTagPart) {
             return
                 self::CACHE_TAG_PREFIX .
                 $this->eventName .
                 self::CACHE_TAG_SEPARATOR .
-                $modelTagPart .
+                $modelTagPart . '[m-r]' .
                 self::CACHE_TAG_SEPARATOR .
-                $relationTagPart;
+                $relationTagPart . '[/r]';
         }
 
         return
