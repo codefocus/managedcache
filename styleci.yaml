@@ -1,0 +1,19 @@
+#risky: false
+preset: psr2
+enabled:
+    - short_array_syntax
+    - strict
+    - unalign_double_arrow
+    - align_comments
+    - alpha_ordered_imports
+    - binary_operator_spaces
+    - blank_line_after_opening_tag
+    - blank_line_before_break
+    - blank_line_before_continue
+    - blank_line_before_declare
+    - blank_line_before_return
+    - blank_line_before_throw
+    - blank_line_before_try
+    - cast_spaces
+    - concat_with_spaces
+    - not_operator_with_space
