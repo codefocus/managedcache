@@ -4,8 +4,6 @@
 [![Code coverage][ico-codecov]][link-codecov]
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![StyleCI][ico-styleci]][link-styleci]
-<a href="https://styleci.io/repos/15239209"><img src="https://styleci.io/repos/15239209/shield" alt="StyleCI Status"></img></a>
-
 [![Total Downloads][ico-downloads]][link-downloads]
 
 # ManagedCache
