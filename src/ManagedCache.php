@@ -171,9 +171,10 @@ class ManagedCache
     private function getModelEventTags(Model $model, string $eventName)
     {
         $modelId = $model->getKey();
-        if (empty($modelId)) {
+        if (empty($modelId) || ! is_numeric($modelId)) {
             return [];
         }
+        $modelId = (int) $modelId;
         $modelName = get_class($model);
         //  Create a tag to flush stores tagged with:
         //  -   this Eloquent event, AND

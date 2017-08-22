@@ -17,6 +17,19 @@ When caching data (say, a fully hydrated `User` with all of its related data -- 
 
 ManagedCache lets you define the invalidation criteria in the same statement that caches the data.
 
+## Requirements
+
+### Cache driver requirements
+
+ManagedCache uses [tags](https://laravel.com/docs/master/cache#cache-tags) to perform its automatic event-based invalidation. This means that your cache driver should support tags (the `file` and `database` drivers do not).
+
+ManagedCache currently only supports the Memcached cache driver.
+Support for other cache drivers such as Redis is planned.
+
+### Model requirements
+
+Models that are used in [invalidation conditions][Automatic invalidation] should have an integer primary key.
+
 ## Install
 
 Via Composer
