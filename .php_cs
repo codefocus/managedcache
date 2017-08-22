@@ -17,7 +17,7 @@ return PhpCsFixer\Config::create()
         'encoding' => true,
         'full_opening_tag' => true,
         'function_declaration' => ['closure_function_spacing' => 'one'],
-        'function_typehint_space' => true,
+        'function_typehint_space' => false,
         'general_phpdoc_annotation_remove' => ['annotations' => ['author', 'access']],
         'include' => true,
         'indentation_type' => true,
