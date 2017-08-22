@@ -11,7 +11,8 @@
          stopOnFailure="false">
     <testsuites>
         <testsuite name="Codefocus Test Suite">
-            <directory>tests</directory>
+            <file>tests/UntaggedTest.php</file>
+            <file>tests/TaggedTest.php</file>
         </testsuite>
     </testsuites>
     <filter>
