@@ -154,8 +154,7 @@ class DefinitionChain implements StoreContract
         //  Store the cache tags for this key,
         //  so that we can GET it without specifying the tags.
         $this->managedCache->setTagsForKey($key, $this->getConditionTags());
-
-        return $this->getTaggedStore()->put($key, $value, $minutes);
+        $this->getTaggedStore()->put($key, $value, $minutes);
     }
 
     /**
@@ -164,7 +163,7 @@ class DefinitionChain implements StoreContract
     public function putMany(array $values, $minutes)
     {
         //  @TODO:Store tags for keys plural.
-        return $this->getTaggedStore()->putMany($values, $minutes);
+        $this->getTaggedStore()->putMany($values, $minutes);
     }
 
     /**
@@ -172,7 +171,7 @@ class DefinitionChain implements StoreContract
      */
     public function increment($key, $value = 1)
     {
-        return $this->getTaggedStore()->increment($key, $value);
+        $this->getTaggedStore()->increment($key, $value);
     }
 
     /**
@@ -180,7 +179,7 @@ class DefinitionChain implements StoreContract
      */
     public function decrement($key, $value = 1)
     {
-        return $this->getTaggedStore()->decrement($key, $value);
+        $this->getTaggedStore()->decrement($key, $value);
     }
 
     /**
@@ -188,7 +187,7 @@ class DefinitionChain implements StoreContract
      */
     public function forever($key, $value)
     {
-        return $this->getTaggedStore()->forever($key, $value);
+        $this->getTaggedStore()->forever($key, $value);
     }
 
     /**
@@ -197,8 +196,7 @@ class DefinitionChain implements StoreContract
     public function forget($key)
     {
         $this->managedCache->deleteTagsForKey($key);
-
-        return $this->getTaggedStore()->forget($key);
+        $this->getTaggedStore()->forget($key);
     }
 
     /**
@@ -206,14 +204,14 @@ class DefinitionChain implements StoreContract
      */
     public function flush()
     {
-        return $this->getTaggedStore()->flush();
+        $this->getTaggedStore()->flush();
     }
 
     /**
      * @inheritdoc
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
-        return $this->getTaggedStore()->getPrefix();
+        return (string) $this->getTaggedStore()->getPrefix();
     }
 }

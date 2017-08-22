@@ -143,5 +143,4 @@ trait HandlesEloquentEvents
         return $modelKeys;
     }
 
-    abstract public function forgetWhen(array $conditions): DefinitionChain;
 }
