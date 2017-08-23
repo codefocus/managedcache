@@ -161,20 +161,20 @@ class ConditionBuilder implements Iterator
      * @return self
      */
     public function relatedModelDetached(
-         $model,
-         ?int $modelId = null,
-         $relatedModel,
-         ?int $relatedModelId = null
-     ): self {
+        $model,
+        ?int $modelId = null,
+        $relatedModel,
+        ?int $relatedModelId = null
+    ): self {
         list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
         list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel, $relatedModelId);
         $this->conditions[] = new Condition(
-             Event::EVENT_ELOQUENT_DETACHED,
-             $modelClassName,
-             $modelId,
-             $relatedModelClassName,
-             $relatedModelId
-         );
+            Event::EVENT_ELOQUENT_DETACHED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
 
         return $this;
     }
@@ -191,20 +191,20 @@ class ConditionBuilder implements Iterator
      * @return self
      */
     public function relatedModelUpdated(
-          $model,
-          ?int $modelId = null,
-          $relatedModel,
-          ?int $relatedModelId = null
-      ): self {
+        $model,
+        ?int $modelId = null,
+        $relatedModel,
+        ?int $relatedModelId = null
+    ): self {
         list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
         list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel, $relatedModelId);
         $this->conditions[] = new Condition(
-              Event::EVENT_ELOQUENT_UPDATED,
-              $modelClassName,
-              $modelId,
-              $relatedModelClassName,
-              $relatedModelId
-          );
+            Event::EVENT_ELOQUENT_UPDATED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
 
         return $this;
     }
