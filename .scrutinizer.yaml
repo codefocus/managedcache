@@ -122,10 +122,10 @@ tools:
           unary_operator_spaces: true
           visibility_required: true
           whitespace_after_comma_in_array: true
-        enabled: false
+        enabled: true
         filter:
-            paths:                []
-            excluded_paths:       []
+            paths: []
+            excluded_paths: ['vendor']
 
 
 build:
@@ -139,7 +139,7 @@ build:
                     - php-scrutinizer-run
                     -
                         command: phpcs-run
-                        use_website_config: true
+                        use_website_config: false
             environment:
                 node:
                     version: 6.0.0
