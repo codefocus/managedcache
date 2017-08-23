@@ -17,4 +17,27 @@ trait IdentifiesEloquentModels
     {
         return is_object($value) && is_subclass_of($value, Model::class);
     }
+
+    /**
+     * Returns an array containing the Model class name, and the model id.
+     * The id is null if $model is a string.
+     *
+     * @param Model|string $model
+     *
+     * @return array
+     */
+    protected function getModelClassNameAndId($model): array
+    {
+        if ($this->isModel($model)) {
+            return [
+                get_class($model),
+                $model->getKey(),
+            ];
+        }
+
+        return [
+            $model,
+            null,
+        ];
+    }
 }

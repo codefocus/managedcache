@@ -3,6 +3,7 @@
 namespace Codefocus\ManagedCache;
 
 use Codefocus\ManagedCache\Events\Event;
+use Codefocus\ManagedCache\Traits\IdentifiesEloquentModels;
 use Illuminate\Database\Eloquent\Model;
 use Iterator;
 
@@ -11,6 +12,8 @@ use Iterator;
  */
 class ConditionBuilder implements Iterator
 {
+    use IdentifiesEloquentModels;
+
     /**
      * @var array
      */
@@ -44,12 +47,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelUpdated($model, ?int $modelId = null): self
     {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_UPDATED,
@@ -137,6 +135,96 @@ class ConditionBuilder implements Iterator
     }
 
     /**
+     * Adds a Condition that tags a cache to get invalidated when
+     * a related Model of the specified class is attached.
+     *
+     * @param mixed $model model instance or class name
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed $relatedModel the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
+     *
+     * @return self
+     */
+    public function relatedModelAttached(
+        $model,
+        ?int $modelId = null,
+        $relatedModel,
+        ?int $relatedModelId = null
+    ): self {
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        $this->conditions[] = new Condition(
+            Event::EVENT_ELOQUENT_ATTACHED,
+            $modelClassName,
+            $modelId,
+            $relatedModelClassName,
+            $relatedModelId
+        );
+
+        return $this;
+    }
+
+    /**
+     * Adds a Condition that tags a cache to get invalidated when
+     * a related Model of the specified class is detached.
+     *
+     * @param mixed $model model instance or class name
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed $relatedModel the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
+     *
+     * @return self
+     */
+    public function relatedModelDetached(
+         $model,
+         ?int $modelId = null,
+         $relatedModel,
+         ?int $relatedModelId = null
+     ): self {
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        $this->conditions[] = new Condition(
+             Event::EVENT_ELOQUENT_DETACHED,
+             $modelClassName,
+             $modelId,
+             $relatedModelClassName,
+             $relatedModelId
+         );
+
+        return $this;
+    }
+
+    /**
+     * Adds a Condition that tags a cache to get invalidated when
+     * a related Model of the specified class is updated.
+     *
+     * @param mixed $model model instance or class name
+     * @param int|null $modelId (default: null) the Model id, if $model is a class name
+     * @param mixed $relatedModel (default: null) the related Model instance or class name
+     * @param int|null $relatedModelId (default: null) the related Model id
+     *
+     * @return self
+     */
+    public function relatedModelUpdated(
+          $model,
+          ?int $modelId = null,
+          $relatedModel,
+          ?int $relatedModelId = null
+      ): self {
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        $this->conditions[] = new Condition(
+              Event::EVENT_ELOQUENT_UPDATED,
+              $modelClassName,
+              $modelId,
+              $relatedModelClassName,
+              $relatedModelId
+          );
+
+        return $this;
+    }
+
+    /**
      * Add an Eloquent event Condition.
      *
      * @param string $eventName
@@ -164,9 +252,6 @@ class ConditionBuilder implements Iterator
 
         return $this;
     }
-
-
-
 
     /**
      * Return the value of the current item in the conditions array.
@@ -211,6 +296,6 @@ class ConditionBuilder implements Iterator
      */
     public function valid(): bool
     {
-        return (current($this->conditions) !== false);
+        return current($this->conditions) !== false;
     }
 }

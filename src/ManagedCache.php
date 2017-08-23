@@ -8,7 +8,6 @@ use Codefocus\ManagedCache\Traits\HandlesEloquentEvents;
 use Exception;
 use Illuminate\Cache\MemcachedStore;
 use Illuminate\Cache\Repository as CacheRepository;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 
 /**
@@ -118,111 +117,6 @@ class ManagedCache
     public function getStore(): CacheRepository
     {
         return $this->store;
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated when
-     * a related Model of the specified class is attached.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) the Model id, if $model is a class name
-     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
-     * @param int|null $relatedModelId (default: null) the related Model id
-     *
-     * @return Condition
-     */
-    public function relationAttached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-        if ($this->isModel($relatedModel)) {
-            $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
-        } else {
-            $relatedModelClassName = $relatedModel;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_ATTACHED,
-            $modelClassName,
-            $modelId,
-            $relatedModelClassName,
-            $relatedModelId
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated when
-     * a related Model of the specified class is detached.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) the Model id, if $model is a class name
-     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
-     * @param int|null $relatedModelId (default: null) the related Model id
-     *
-     * @return Condition
-     */
-    public function relationDetached($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-        if ($this->isModel($relatedModel)) {
-            $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
-        } else {
-            $relatedModelClassName = $relatedModel;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_DETACHED,
-            $modelClassName,
-            $modelId,
-            $relatedModelClassName,
-            $relatedModelId
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated when
-     * a related Model of the specified class is updated.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) the Model id, if $model is a class name
-     * @param mixed|null $relatedModel (default: null) the related Model instance or class name
-     * @param int|null $relatedModelId (default: null) the related Model id
-     *
-     * @return Condition
-     */
-    public function relationUpdated($model, ?int $modelId = null, $relatedModel = null, ?int $relatedModelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-        if ($this->isModel($relatedModel)) {
-            $relatedModelClassName = get_class($relatedModel);
-            $relatedModelId = $relatedModel->/* @scrutinizer ignore-call */getKey();
-        } else {
-            $relatedModelClassName = $relatedModel;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_UPDATED,
-            $modelClassName,
-            $modelId,
-            $relatedModelClassName,
-            $relatedModelId
-        );
     }
 
     /**
