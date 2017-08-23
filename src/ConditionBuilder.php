@@ -143,12 +143,12 @@ class ConditionBuilder implements Iterator
         return $this;
     }
 
-    public function current(): mixed
+    public function current()
     {
         return current($this->conditions);
     }
 
-    public function key(): scalar
+    public function key()
     {
         return key($this->conditions);
     }
@@ -160,11 +160,11 @@ class ConditionBuilder implements Iterator
 
     public function rewind(): void
     {
-        rewind($this->conditions);
+        reset($this->conditions);
     }
 
-    public function valid(): boolean
+    public function valid(): bool
     {
-        return valid($this->conditions);
+        return (current($this->conditions) !== false);
     }
 }
