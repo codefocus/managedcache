@@ -47,7 +47,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelUpdated($model, ?int $modelId = null): self
     {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_UPDATED,
@@ -68,7 +68,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelSaved($model, ?int $modelId = null): self
     {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_SAVED,
@@ -89,7 +89,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelDeleted($model, ?int $modelId = null): self
     {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_DELETED,
@@ -110,7 +110,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelRestored($model, ?int $modelId = null): self
     {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_RESTORED,
@@ -136,8 +136,8 @@ class ConditionBuilder implements Iterator
         $relatedModel,
         ?int $relatedModelId = null
     ): self {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
-        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel, $relatedModelId);
         $this->conditions[] = new Condition(
             Event::EVENT_ELOQUENT_ATTACHED,
             $modelClassName,
@@ -166,8 +166,8 @@ class ConditionBuilder implements Iterator
          $relatedModel,
          ?int $relatedModelId = null
      ): self {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
-        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel, $relatedModelId);
         $this->conditions[] = new Condition(
              Event::EVENT_ELOQUENT_DETACHED,
              $modelClassName,
@@ -196,8 +196,8 @@ class ConditionBuilder implements Iterator
           $relatedModel,
           ?int $relatedModelId = null
       ): self {
-        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
-        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel);
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model, $modelId);
+        list($relatedModelClassName, $relatedModelId) = $this->getModelClassNameAndId($relatedModel, $relatedModelId);
         $this->conditions[] = new Condition(
               Event::EVENT_ELOQUENT_UPDATED,
               $modelClassName,

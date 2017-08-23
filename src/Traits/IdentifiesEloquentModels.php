@@ -23,21 +23,22 @@ trait IdentifiesEloquentModels
      * The id is null if $model is a string.
      *
      * @param Model|string $model
+     * @param int|null $modelId (default: null)
      *
      * @return array
      */
-    protected function getModelClassNameAndId($model): array
+    protected function getModelClassNameAndId($model, ?int $modelId = null): array
     {
         if ($this->isModel($model)) {
             return [
                 get_class($model),
-                $model->getKey(),
+                $modelId ?? $model->getKey(),
             ];
         }
 
         return [
             $model,
-            null,
+            $modelId,
         ];
     }
 }
