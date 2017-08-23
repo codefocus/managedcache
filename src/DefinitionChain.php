@@ -41,28 +41,9 @@ class DefinitionChain implements StoreContract
     public function setForgetConditions(Closure $closure): self
     {
         $this->conditions = new ConditionBuilder();
-        $closure($this->conditions);
-        $this->conditionTags = null;
 
-        return $this;
+        return $this->addForgetConditions($closure);
     }
-
-    // /**
-    //  * Sets the array of Conditions that trigger the cache key to get flushed.
-    //  *
-    //  * @param array $conditions An array of Condition instances
-    //  *
-    //  * @return self
-    //  */
-    // public function forgetWhen(array $conditions): self
-    // {
-    //     $this->conditions = $conditions;
-    //     $this->conditionTags = null;
-    //
-    //     // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
-    //
-    //     return $this;
-    // }
 
     /**
      * Adds one or more Conditions that triggers the cache key to get flushed.
@@ -73,8 +54,8 @@ class DefinitionChain implements StoreContract
      */
     public function addForgetConditions(Closure $closure): self
     {
-        $this->conditions = $closure($this->conditions);
         $this->conditionTags = null;
+        $closure($this->conditions);
 
         return $this;
     }
@@ -98,8 +79,6 @@ class DefinitionChain implements StoreContract
     {
         if (empty($this->conditionTags)) {
             $tags = [];
-
-            dump($this->conditions);
             foreach ($this->conditions as $condition) {
                 $tags[] = (string) $condition;
             }
