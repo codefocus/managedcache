@@ -185,7 +185,7 @@ class ConditionBuilder implements Iterator
      *
      * @param mixed $model model instance or class name
      * @param int|null $modelId (default: null) the Model id, if $model is a class name
-     * @param mixed $relatedModel (default: null) the related Model instance or class name
+     * @param mixed $relatedModel the related Model instance or class name
      * @param int|null $relatedModelId (default: null) the related Model id
      *
      * @return self
