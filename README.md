@@ -77,7 +77,7 @@ $user = ManagedCache::get($cacheKey);
 
 ### Automatic invalidation
 
-To automatically invalidate this data, call the `forgetWhen()` function at the start of the function chain, passing in an array of invalidation conditions.
+To automatically invalidate this data, call the `setForgetConditions()` function at the start of the function chain, passing in an array of invalidation conditions.
 
 These invalidation conditions (`Codefocus\ManagedCache\Condition` objects) are named after the Eloquent events that trigger them, and can be created with intuitive helper functions:
 
@@ -95,23 +95,24 @@ These invalidation conditions (`Codefocus\ManagedCache\Condition` objects) are n
 //  - A Preference is detached from this User
 //  - A Preference attached to this User is updated
 ManagedCache
-    ::forgetWhen([
-        ManagedCache::deleted($user),
-        ManagedCache::updated($user),
-        ManagedCache::relationAttached($user, Role::class),
-        ManagedCache::relationDetached($user, Role::class),
-        ManagedCache::relationUpdated($user, Role::class),
-        ManagedCache::relationAttached($user, Subscription::class),
-        ManagedCache::relationDetached($user, Subscription::class),
-        ManagedCache::relationUpdated($user, Subscription::class),
-        ManagedCache::relationAttached($user, Preference::class),
-        ManagedCache::relationDetached($user, Preference::class),
-        ManagedCache::relationUpdated($user, Preference::class),
-    ])
+    ::setForgetConditions(function ($conditionBuilder) use ($user) {
+        return $conditionBuilder
+            ->modelDeleted($user)
+            ->modelUpdated($user)
+            ->relatedModelAttached($user, Role::class)
+            ->relatedModelDetached($user, Role::class)
+            ->relatedModelUpdated($user, Role::class)
+            ->relatedModelAttached($user, Subscription::class)
+            ->relatedModelDetached($user, Subscription::class)
+            ->relatedModelUpdated($user, Subscription::class)
+            ->relatedModelAttached($user, Preference::class)
+            ->relatedModelDetached($user, Preference::class)
+            ->relatedModelUpdated($user, Preference::class);
+    })
     ->put($cacheKey, $user, 120);
 ```
 
-As you can see, more complex data with many invalidation conditions could get cumbersome to define. To invalidate on _any_ `created`, `updated`, `saved`, `deleted` or `restored` Eloquent event, use `any()`:
+As you can see, more complex data with many invalidation conditions could get cumbersome to define. To invalidate a cache key on _any_ of the Eloquent events (`created`, `updated`, `saved`, `deleted` or `restored`) for the specified Model class or instance, use `anyModelEvent()` and `anyRelatedModelEvent()`:
 
 ``` php
 //  Store data, and invalidate this cache when one of these conditions is met:
@@ -120,12 +121,13 @@ As you can see, more complex data with many invalidation conditions could get cu
 //  - A Subscription attached to this User is created, updated, saved, deleted or restored
 //  - A Preference attached to this User is created, updated, saved, deleted or restored
 ManagedCache
-    ::forgetWhen([
-        ManagedCache::any($user),
-        ManagedCache::relationAny($user, Role::class),
-        ManagedCache::relationAny($user, Subscription::class),
-        ManagedCache::relationAny($user, Preference::class),
-    ])
+    ::setForgetConditions(function ($conditionBuilder) use ($user) {
+        return $conditionBuilder
+            ->anyModelEvent($user)
+            ->anyRelatedModelEvent($user, Role::class)
+            ->anyRelatedModelEvent($user, Subscription::class)
+            ->anyRelatedModelEvent($user, Preference::class);
+    })
     ->put($cacheKey, $user, 120);
 ```
 

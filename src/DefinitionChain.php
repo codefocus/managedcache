@@ -2,6 +2,7 @@
 
 namespace Codefocus\ManagedCache;
 
+use Closure;
 use Illuminate\Cache\TaggedCache;
 use Illuminate\Contracts\Cache\Store as StoreContract;
 
@@ -11,7 +12,10 @@ class DefinitionChain implements StoreContract
 
     protected $store = null;
 
-    protected $conditions = [];
+    /**
+     * @var ConditionBuilder
+     */
+    protected $conditions = null;
 
     protected $conditionTags = null;
 
@@ -24,61 +28,63 @@ class DefinitionChain implements StoreContract
     {
         $this->managedCache = $managedCache;
         $this->store = $managedCache->getStore();
+        $this->conditions = new ConditionBuilder();
     }
 
     /**
      * Sets the array of Conditions that trigger the cache key to get flushed.
      *
-     * @param array $conditions An array of Condition instances
+     * @param Closure $closure
      *
      * @return self
      */
-    public function forgetWhen(array $conditions): self
+    public function setForgetConditions(Closure $closure): self
     {
-        $this->conditions = $conditions;
-        $this->conditionTags = null;
-
-        // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
-
-        return $this;
-    }
-
-    /**
-     * Adds a Condition that triggers the cache key to get flushed.
-     *
-     * @param Condition $condition
-     *
-     * @return self
-     */
-    public function addCondition(Condition $condition): self
-    {
-        $this->conditions[] = $condition;
+        $this->conditions = new ConditionBuilder();
+        $closure($this->conditions);
         $this->conditionTags = null;
 
         return $this;
     }
 
+    // /**
+    //  * Sets the array of Conditions that trigger the cache key to get flushed.
+    //  *
+    //  * @param array $conditions An array of Condition instances
+    //  *
+    //  * @return self
+    //  */
+    // public function forgetWhen(array $conditions): self
+    // {
+    //     $this->conditions = $conditions;
+    //     $this->conditionTags = null;
+    //
+    //     // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
+    //
+    //     return $this;
+    // }
+
     /**
-     * Adds an array of Conditions that trigger the cache key to get flushed.
+     * Adds one or more Conditions that triggers the cache key to get flushed.
      *
-     * @param array $conditions An array of Condition instances
+     * @param Closure $closure
      *
      * @return self
      */
-    public function addConditions(array $conditions): self
+    public function addForgetConditions(Closure $closure): self
     {
-        $this->conditions += $conditions;
+        $this->conditions = $closure($this->conditions);
         $this->conditionTags = null;
 
         return $this;
     }
 
     /**
-     * Returns an array of Condition instances.
+     * Returns the ConditionBuilder.
      *
-     * @return array
+     * @return ConditionBuilder
      */
-    public function getConditions(): array
+    public function getConditions(): ConditionBuilder
     {
         return $this->conditions;
     }
@@ -92,6 +98,8 @@ class DefinitionChain implements StoreContract
     {
         if (empty($this->conditionTags)) {
             $tags = [];
+
+            dump($this->conditions);
             foreach ($this->conditions as $condition) {
                 $tags[] = (string) $condition;
             }

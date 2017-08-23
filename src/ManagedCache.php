@@ -14,7 +14,7 @@ use Illuminate\Foundation\Application;
 /**
  * ManagedCache.
  *
- * @method DefinitionChain forgetWhen(array $conditions)
+ * @method DefinitionChain setForgetConditions(array $conditions)
  */
 class ManagedCache
 {
@@ -118,126 +118,6 @@ class ManagedCache
     public function getStore(): CacheRepository
     {
         return $this->store;
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated
-     * when a new Model of the specified class is created.
-     *
-     * @param string $modelClassName model class name
-     *
-     * @return Condition
-     */
-    public function created(string $modelClassName): Condition
-    {
-        return new Condition(
-            Event::EVENT_ELOQUENT_CREATED,
-            $modelClassName
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated
-     * when the specified Model instance, or any Model of the specified class
-     * is updated.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) The Model id
-     *
-     * @return Condition
-     */
-    public function updated($model, ?int $modelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_UPDATED,
-            $modelClassName,
-            $modelId
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated
-     * when the specified Model instance, or any Model of the specified class
-     * is saved.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) The Model id
-     *
-     * @return Condition
-     */
-    public function saved($model, ?int $modelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_SAVED,
-            $modelClassName,
-            $modelId
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated
-     * when the specified Model instance, or any Model of the specified class
-     * is deleted.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) The Model id
-     *
-     * @return Condition
-     */
-    public function deleted($model, ?int $modelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_DELETED,
-            $modelClassName,
-            $modelId
-        );
-    }
-
-    /**
-     * Returns a Condition instance that tags a cache to get invalidated
-     * when the specified Model instance, or any Model of the specified class
-     * is restored.
-     *
-     * @param mixed $model model instance or class name
-     * @param int|null $modelId (default: null) The Model id
-     *
-     * @return Condition
-     */
-    public function restored($model, ?int $modelId = null): Condition
-    {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
-
-        return new Condition(
-            Event::EVENT_ELOQUENT_RESTORED,
-            $modelClassName,
-            $modelId
-        );
     }
 
     /**
