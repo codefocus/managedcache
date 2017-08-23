@@ -71,9 +71,9 @@ class Condition
                 self::CACHE_TAG_PREFIX .
                 $this->eventName .
                 self::CACHE_TAG_SEPARATOR .
-                $modelTagPart . '[m-r]' .
+                $modelTagPart .
                 self::CACHE_TAG_SEPARATOR .
-                $relationTagPart . '[/r]';
+                $relationTagPart;
         }
 
         return

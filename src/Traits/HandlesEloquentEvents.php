@@ -43,8 +43,7 @@ trait HandlesEloquentEvents
         if ( ! preg_match($regex, $eventKey, $matches)) {
             return;
         }
-        $eventName = $matches[1];
-        $modelName = $matches[2];
+        list(,$eventName, $modelName) = $matches;
         //  Ensure $payload is always an array.
         $payload = (is_array($payload)) ? $payload : [$payload];
         //  Create a tag to flush stores tagged with:
