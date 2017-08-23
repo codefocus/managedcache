@@ -68,12 +68,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelSaved($model, ?int $modelId = null): self
     {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_SAVED,
@@ -94,12 +89,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelDeleted($model, ?int $modelId = null): self
     {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_DELETED,
@@ -120,12 +110,7 @@ class ConditionBuilder implements Iterator
      */
     public function modelRestored($model, ?int $modelId = null): self
     {
-        if ($this->isModel($model)) {
-            $modelClassName = get_class($model);
-            $modelId = $model->getKey();
-        } else {
-            $modelClassName = $model;
-        }
+        list($modelClassName, $modelId) = $this->getModelClassNameAndId($model);
 
         return $this->addEloquentEventCondition(
             Event::EVENT_ELOQUENT_RESTORED,
